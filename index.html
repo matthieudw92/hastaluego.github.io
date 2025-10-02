@@ -3,15 +3,16 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>HastaLuego — Mini-jeu (pixel 90s)</title>
+  <title>HastaLuego — Mini-jeu</title>
   <style>
     :root{
-      /* Palette 90s (ciel/mer/rochers) */
-      --sky1:#6ec1ff; --sky2:#47a3ff; --sea1:#1b4d8a; --sea2:#133a69;
-      --foam:#c7ecff; --sun:#ffd43b; --sunCore:#ffef99;
+      /* Palette pixel 90s (ciel/mer/rochers) */
+      --sky1:#6ec1ff; --sky2:#47a3ff;
+      --sea1:#1b4d8a; --sea2:#133a69; --foam:#c7ecff;
+      --sun:#ffd43b; --sunCore:#ffef99;
       --rock1:#8b5e3c; --rock2:#6d472d; --rockHL:#b07f54;
-      --red:#ef4444; --green:#10b981; --fg:#e5e7eb; --muted:#9ca3af;
-      --panel:#0b1022ee; --panel2:#0b1022f7; --outline:#ffffff24;
+      --red:#ef4444; --green:#10b981;
+      --fg:#e5e7eb; --muted:#9ca3af; --panel:#0b1022f2; --outline:#ffffff24;
       --accent:#f59e0b; --accent2:#fbbf24;
     }
     *{box-sizing:border-box}
@@ -35,7 +36,7 @@
     .btn:hover{background:#334155}
     .btnAccent{background:var(--accent);color:#1a1a1a;border:none}
     .btnAccent:hover{background:#f59f0b}
-    .banner{position:absolute;left:12px;right:12px;top:12px;padding:10px 12px;background:#19324dcc;border:1px solid var(--outline);border-radius:12px;text-align:center;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .banner{position:absolute;left:12px;right:12px;top:12px;padding:10px 12px;background:#19324dcc;border:1px solid var(--outline);border-radius:12px;text-align:center;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.35);display:none}
     .banner--danger{background:#7f1d1dcc}
     .banner--warn{background:#78350fcc}
     .highlight{color:var(--accent2);font-weight:900;text-decoration:underline wavy var(--accent2) 1.5px}
@@ -45,7 +46,7 @@
 <body>
   <header>
     <h1>HastaLuego</h1>
-    <p class="muted">⛵ 2D rétro/pixel — Évite les rochers, passe du bon côté des bouées et rejoins le <em>po(r)t de départ</em>.</p>
+    <p class="muted">⛵ Pixel-art rétrogaming — Évite les rochers, passe du bon côté des bouées et rejoins le <em>po(r)t de départ</em>.</p>
   </header>
 
   <div class="wrap">
@@ -71,7 +72,7 @@
       </div>
 
       <!-- Bannière -->
-      <div class="banner" id="banner" style="display:none"></div>
+      <div class="banner" id="banner"></div>
 
       <!-- Victoire -->
       <div class="overlay" id="win" style="display:none">
@@ -97,26 +98,24 @@
 
 <script>
 (function(){
-  // === Constantes ===
+  // --- Constantes gameplay ---
   const OBSTACLE_TARGET = 12;
   const BASE_SCROLL = 140;      // px/s
   const BOAT_SPEED  = 220;      // déplacement latéral
-  const SPAWN_BASE  = 2.5;      // une apparition toutes ~2.5s
+  const SPAWN_BASE  = 2.5;      // ~ toutes 2.5 s
   const SIDE_MARGIN = 6;        // tolérance gauche/droite bouées
 
-  // Bouées "plus centrées" pour plus de difficulté :
-  // - rouges autour du centre gauche (30% → 50%)
-  // - vertes autour du centre droit (50% → 70%)
-  const RED_MIN   = 0.30, RED_MAX   = 0.50;
-  const GREEN_MIN = 0.50, GREEN_MAX = 0.70;
+  // Bouées selon brief : rouges 30–50% (moitié gauche), vertes 50–70% (moitié droite)
+  const RED_MIN=0.30, RED_MAX=0.50;
+  const GREEN_MIN=0.50, GREEN_MAX=0.70;
 
-  // === DOM & état ===
+  // DOM
   const board = document.getElementById('board');
   const canvas= document.getElementById('game');
-  const ctx=canvas.getContext('2d'); ctx.imageSmoothingEnabled=false;
-  const banner = document.getElementById('banner');
-  const intro  = document.getElementById('intro');
-  const win    = document.getElementById('win');
+  const ctx   = canvas.getContext('2d'); ctx.imageSmoothingEnabled=false;
+  const banner= document.getElementById('banner');
+  const intro = document.getElementById('intro');
+  const win   = document.getElementById('win');
   const startBtn = document.getElementById('startBtn');
   const replayBtn= document.getElementById('replayBtn');
   const audioBtn = document.getElementById('audioBtn');
@@ -125,51 +124,40 @@
   const spdEl    = document.getElementById('spd');
   const bgm      = document.getElementById('bgm');
 
+  // État
   const keys = new Set();
   const size = { w:960, h:600, dpr:1 };
   const boat = { x:0, y:0, r:12 };
-  let obstacles = [];
-  let flag=null, passed=0, scroll=BASE_SCROLL;
+  let obstacles=[], flag=null, passed=0, scroll=BASE_SCROLL;
   let state='intro', nextSpawn=SPAWN_BASE, lastTs=0, raf=0, autoStartTO=null;
 
-  // === Utils ===
+  // Utils
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const rand=(a,b)=>Math.random()*(b-a)+a;
   const now = ()=>performance.now();
 
-  // === Textures pixel (eau, nuages) ===
-  let waterPat=null, foamPat=null, cloudSprites=[];
+  // Textures pixel (eau, écume, nuages)
+  let waterPat=null, foamPat=null, clouds=[];
   function makePatterns(){
-    // tuile eau 16x16
     const t=document.createElement('canvas'); t.width=t.height=16; const c=t.getContext('2d');
-    // fond mer
     c.fillStyle='#133a69'; c.fillRect(0,0,16,16);
-    c.fillStyle='#1b4d8a';
-    for(let y=0;y<16;y+=2){ for(let x=0;x<16;x+=4){ c.fillRect(x, y, 3, 1); } }
-    // vagues claires
-    c.fillStyle='#2b6fb1';
-    c.fillRect(1,5,6,1); c.fillRect(9,5,6,1);
-    c.fillRect(3,11,6,1);
+    c.fillStyle='#1b4d8a'; for(let y=0;y<16;y+=2){ for(let x=0;x<16;x+=4){ c.fillRect(x,y,3,1); } }
+    c.fillStyle='#2b6fb1'; c.fillRect(1,5,6,1); c.fillRect(9,5,6,1); c.fillRect(3,11,6,1);
     waterPat = ctx.createPattern(t,'repeat');
 
-    // écume 16x16
     const f=document.createElement('canvas'); f.width=f.height=16; const cf=f.getContext('2d');
-    cf.fillStyle='rgba(255,255,255,0)';
-    cf.fillRect(0,0,16,16);
-    cf.fillStyle='#c7ecff';
-    // points d'écume “pixel”
-    [[2,2],[4,2],[11,3],[7,7],[12,8],[3,10],[8,13],[14,14]].forEach(([x,y])=>cf.fillRect(x,y,1,1));
+    cf.fillStyle='rgba(255,255,255,0)'; cf.fillRect(0,0,16,16);
+    cf.fillStyle='#c7ecff'; [[2,2],[4,2],[11,3],[7,7],[12,8],[3,10],[8,13],[14,14]].forEach(([x,y])=>cf.fillRect(x,y,1,1));
     foamPat = ctx.createPattern(f,'repeat');
 
-    // nuages sprites (rectangles 8x8/12x6…)
-    cloudSprites = [
+    clouds = [
       {x:40,y:32,w:48,h:16,dx:12},
       {x:220,y:22,w:64,h:18,dx:10},
       {x:420,y:36,w:56,h:16,dx:14}
     ];
   }
 
-  // === Mesure canvas (RO anti-boucle) ===
+  // Mesure (évite boucles RO)
   function applyBuffer(){
     const dpr=Math.min(2,window.devicePixelRatio||1);
     const r=board.getBoundingClientRect();
@@ -182,7 +170,7 @@
   const ro=new ResizeObserver(()=>{ if(!roTick){ roTick=true; requestAnimationFrame(()=>{ roTick=false; applyBuffer(); if(state!=='playing') draw(); }); }});
   ro.observe(board); window.addEventListener('resize', ()=>applyBuffer(), {passive:true});
 
-  // === Audio ===
+  // Audio
   async function tryPlayAudio(){
     if(!bgm) return;
     try{ bgm.loop=true; await bgm.play(); audioBtnFloat.style.display='none'; }
@@ -191,7 +179,7 @@
   audioBtn.addEventListener('click', tryPlayAudio);
   audioBtnFloat.addEventListener('click', tryPlayAudio);
 
-  // === Bannières ===
+  // Bannières
   function showBanner(msg, kind='info'){
     banner.textContent=msg;
     banner.style.display='block';
@@ -199,20 +187,16 @@
     clearTimeout(showBanner._to); showBanner._to=setTimeout(()=>banner.style.display='none', 2200);
   }
 
-  // === Obstacles ===
+  // Obstacles
   function spawnObstacle(){
     if(passed>=OBSTACLE_TARGET) return;
     const t=Math.random();
     let type='rock'; if(t<0.33) type='red'; else if(t<0.66) type='green';
     const y=-30; let x,s=14;
-    if(type==='red'){ // carré rouge — zone centre-gauche
-      x = rand(size.w*RED_MIN, size.w*RED_MAX); s=12;
-    }else if(type==='green'){ // triangle vert — zone centre-droite
-      x = rand(size.w*GREEN_MIN, size.w*GREEN_MAX); s=12;
-    }else{ // rocher marron
-      x = rand(size.w*0.22, size.w*0.78); s = rand(13,18);
-    }
-    obstacles.push({type,x,y,s,checked:false});
+    if(type==='red'){ x = rand(size.w*RED_MIN, size.w*RED_MAX); s=12; }
+    else if(type==='green'){ x = rand(size.w*GREEN_MIN, size.w*GREEN_MAX); s=12; }
+    else { x = rand(size.w*0.22, size.w*0.78); s = rand(13,18); }
+    obstacles.push({type,x,y,s,checked:false,hit:false});
   }
 
   function resetFromIntro(){
@@ -225,94 +209,75 @@
 
   function crash(msg){
     state='dead'; showBanner(msg,'danger');
-    setTimeout(()=>{
-      state='intro'; intro.style.display='flex'; tryPlayAudio(); scheduleAutoStart();
-    }, 1200);
+    setTimeout(()=>{ state='intro'; intro.style.display='flex'; tryPlayAudio(); scheduleAutoStart(); }, 1200);
   }
 
   function scheduleAutoStart(){
     clearTimeout(autoStartTO);
-    autoStartTO=setTimeout(()=>{ if(state==='intro') resetFromIntro(); }, 8000);
+    autoStartTO=setTimeout(()=>{ if(state==='intro') { resetFromIntro(); tryPlayAudio(); } }, 8000);
   }
 
-  // === Dessins ===
+  // Dessins
   function drawSkyAndSea(t){
     const w=size.w,h=size.h;
-
-    // ciel uni + soleil “pixel”
     ctx.fillStyle='#6ec1ff'; ctx.fillRect(0,0,w,h);
-    // soleil
-    const sunX=w-76, sunY=42;
-    ctx.fillStyle= '#ffd43b'; ctx.fillRect(sunX-10, sunY-10, 20, 20);
-    ctx.fillStyle= '#ffef99'; ctx.fillRect(sunX-6, sunY-6, 12, 12);
-    // rayons “croix”
-    ctx.fillStyle='#ffd43b'; ctx.fillRect(sunX-1, sunY-16, 2, 6);
-    ctx.fillRect(sunX-1, sunY+10, 2, 6);
-    ctx.fillRect(sunX-16, sunY-1, 6, 2);
-    ctx.fillRect(sunX+10, sunY-1, 6, 2);
 
-    // nuages blocs (défilement lent)
+    // soleil pixel
+    const sx=w-76, sy=42;
+    ctx.fillStyle= '#ffd43b'; ctx.fillRect(sx-10, sy-10, 20, 20);
+    ctx.fillStyle= '#ffef99'; ctx.fillRect(sx-6, sy-6, 12, 12);
+    ctx.fillStyle='#ffd43b'; ctx.fillRect(sx-1, sy-16, 2, 6); ctx.fillRect(sx-1, sy+10, 2, 6);
+    ctx.fillRect(sx-16, sy-1, 6, 2); ctx.fillRect(sx+10, sy-1, 6, 2);
+
+    // nuages
     ctx.fillStyle='#ffffff';
-    cloudSprites.forEach(cl=>{
-      cl.x += (cl.dx*0.02);
-      if(cl.x> w+40) cl.x = -80;
+    clouds.forEach(cl=>{
+      cl.x += (cl.dx*0.02); if(cl.x> w+40) cl.x = -80;
       const x=Math.floor(cl.x), y=Math.floor(cl.y);
-      // 3 rectangles pour un “pixel cloud”
       ctx.fillStyle='#ffffff'; ctx.fillRect(x, y, cl.w, cl.h);
       ctx.fillStyle='#e6f4ff'; ctx.fillRect(x+6, y+4, cl.w-12, cl.h-6);
       ctx.fillStyle='#cfe7ff'; ctx.fillRect(x+12, y+6, cl.w-22, cl.h-10);
     });
 
-    // mer (pattern eau + écume qui défile verticalement)
+    // mer (pattern + écume) défilante
     const off = Math.floor((t*scroll*0.35)%16);
-    ctx.save();
-    ctx.translate(0, off);
-    ctx.fillStyle=waterPat; ctx.fillRect(0, h*0.35, w, h); // eau dès 35% hauteur
+    ctx.save(); ctx.translate(0, off);
+    ctx.fillStyle=waterPat; ctx.fillRect(0, h*0.35, w, h);
     ctx.fillStyle=foamPat;  ctx.globalAlpha=0.9; ctx.fillRect(0, h*0.35, w, h);
-    ctx.restore();
-    ctx.globalAlpha=1;
+    ctx.restore(); ctx.globalAlpha=1;
 
-    // effet scanlines léger (CRT)
+    // scanlines
     ctx.fillStyle='rgba(0,0,0,0.07)';
     for(let y=0;y<h;y+=3){ ctx.fillRect(0,y,w,1); }
   }
 
   function drawBoat(){
     const b=boat;
-    // coque (pavés)
     ctx.fillStyle='#20325a'; ctx.fillRect(Math.floor(b.x-10), Math.floor(b.y-4), 20, 8);
     ctx.fillStyle='#162748'; ctx.fillRect(Math.floor(b.x-10), Math.floor(b.y+1), 20, 3);
-    // proue pixel
     ctx.fillStyle='#223a6e'; ctx.fillRect(Math.floor(b.x-1), Math.floor(b.y-10), 2, 6);
-    // mât
     ctx.fillStyle='#d1d5db'; ctx.fillRect(Math.floor(b.x-1), Math.floor(b.y-30), 2, 20);
-    // voile triangle “pixellisé”
-    ctx.fillStyle='#f1f5f9';
-    ctx.beginPath();
+    ctx.fillStyle='#f1f5f9'; ctx.beginPath();
     ctx.moveTo(b.x, b.y-30); ctx.lineTo(b.x, b.y-12); ctx.lineTo(b.x+16, b.y-18); ctx.closePath(); ctx.fill();
   }
 
   function drawRock(o){
-    // Pictogramme rocher marron en blocs
     const x=Math.floor(o.x), y=Math.floor(o.y), s=Math.floor(o.s);
     ctx.fillStyle='var(--rock2)'; ctx.fillRect(x-s, y-s+2, s*2, s*2-2);
     ctx.fillStyle='var(--rock1)'; ctx.fillRect(x-s+2, y-s, s*2-4, s*2-4);
     ctx.fillStyle='var(--rockHL)'; ctx.fillRect(x- Math.floor(s*0.4), y- Math.floor(s*0.6), Math.floor(s*0.8), 2);
-    // contour clair
     ctx.strokeStyle='#00000055'; ctx.lineWidth=1; ctx.strokeRect(x-s+0.5, y-s+0.5, s*2-1, s*2-1);
   }
 
   function drawObstacle(o){
     if(o.type==='rock'){ drawRock(o); return; }
-    if(o.type==='red'){ // carré rouge
-      ctx.fillStyle='var(--red)';
+    if(o.type==='red'){
       const x=Math.floor(o.x-o.s), y=Math.floor(o.y-o.s), w=o.s*2, h=o.s*2;
-      ctx.fillRect(x, y, w, h);
-      ctx.strokeStyle='#ffffffaa'; ctx.strokeRect(x+0.5, y+0.5, w-1, h-1);
-    }else{ // triangle vert
+      ctx.fillStyle='var(--red)'; ctx.fillRect(x,y,w,h);
+      ctx.strokeStyle='#ffffffaa'; ctx.strokeRect(x+0.5,y+0.5,w-1,h-1);
+    }else{ // green triangle
       ctx.fillStyle='var(--green)';
-      ctx.beginPath();
-      ctx.moveTo(o.x, o.y - o.s);
+      ctx.beginPath(); ctx.moveTo(o.x, o.y - o.s);
       ctx.lineTo(o.x - o.s, o.y + o.s);
       ctx.lineTo(o.x + o.s, o.y + o.s);
       ctx.closePath(); ctx.fill();
@@ -323,66 +288,64 @@
   function drawFlag(){
     if(!flag) return;
     const f=flag;
-    ctx.fillStyle='#e5e7eb'; ctx.fillRect(f.x-1, f.y-20, 2, 40); // mât pixel
-    ctx.fillStyle='#fbbf24'; ctx.fillRect(f.x, f.y-18, 28, 10);  // drapeau pixel
-    // label
+    ctx.fillStyle='#e5e7eb'; ctx.fillRect(f.x-1, f.y-20, 2, 40);
+    ctx.fillStyle='#fbbf24'; ctx.fillRect(f.x, f.y-18, 28, 10);
     ctx.fillStyle='#0b1022'; ctx.fillRect(f.x-30, f.y-30, 84, 12);
     ctx.fillStyle='#e5e7eb'; ctx.font='12px ui-monospace, monospace'; ctx.textBaseline='top';
     ctx.fillText('po(r)t de départ', f.x-26, f.y-29);
   }
 
-  // === Logique ===
+  // Logique
   function spawnTick(dt){
     nextSpawn-=dt;
-    if(nextSpawn<=0){
-      spawnObstacle();
-      nextSpawn=SPAWN_BASE*(0.9+Math.random()*0.35);
-    }
+    if(nextSpawn<=0){ spawnObstacle(); nextSpawn=SPAWN_BASE*(0.9+Math.random()*0.35); }
   }
 
-  function checkRocks(){
+  function checkCollisions(){
     for(const o of obstacles){
-      if(o.type!=='rock') continue;
-      const d=Math.hypot(o.x-boat.x, o.y-boat.y);
-      if(d<o.s+boat.r){ crash("Tu t’es échoué ! Tu dois sûrement être un quanti…"); return; }
+      // rochers: collision circulaire
+      if(o.type==='rock'){
+        const d=Math.hypot(o.x-boat.x, o.y-boat.y);
+        if(d<o.s+boat.r){ crash("Tu t’es échoué ! Tu dois sûrement être un quanti…"); return true; }
+      }
     }
+    return false;
   }
 
-  function checkBuoys(){
+  function checkRulesAndCount(){
     for(const o of obstacles){
-      if(o.type!=='red' && o.type!=='green') continue;
       if(o.checked) continue;
-      if(o.y >= boat.y){ // obstacle “passé”
-        o.checked=true;
+      if(o.y >= boat.y){
+        o.checked = true;
         if(o.type==='red'){
           if(!(boat.x > o.x + SIDE_MARGIN)){
             crash("on doit passer à droite des bouées bâbord rouges ! Marin d’eau douce !");
-            return;
+            return true;
           }
-        }else{ // green
+        }else if(o.type==='green'){
           if(!(boat.x < o.x - SIDE_MARGIN)){
             crash("on doit passer à gauche des bouées tribord vertes ! Même Fred !");
-            return;
+            return true;
           }
         }
         passed++;
       }
     }
+    return false;
   }
 
   function update(dt, t){
-    // vitesse (haut/bas)
     if(keys.has('ArrowUp'))   scroll = clamp(scroll + 80*dt, 100, 260);
     if(keys.has('ArrowDown')) scroll = clamp(scroll - 80*dt,  80, 260);
 
-    // latéral (gauche/droite)
     const vx = (keys.has('ArrowRight')?1:0) - (keys.has('ArrowLeft')?1:0);
     boat.x = clamp(boat.x + vx*BOAT_SPEED*dt, 16, size.w-16);
 
     if(state==='playing'){
       spawnTick(dt);
       obstacles.forEach(o=>o.y += scroll*dt);
-      checkRocks(); checkBuoys();
+      if(checkCollisions()) return;
+      if(checkRulesAndCount()) return;
 
       if(passed>=OBSTACLE_TARGET && !flag){
         flag = { x: clamp(boat.x, size.w*0.35, size.w*0.65), y: -40 };
@@ -402,20 +365,21 @@
     spdEl.textContent=Math.round(scroll)+' px/s';
   }
 
-  function loop(ts){
-    const dt=Math.min(.033, (ts-lastTs)/1000||0); lastTs=ts;
-    // décor
-    drawSkyAndSea(ts/1000);
-    // objets
+  function draw(t){
+    drawSkyAndSea(t);
     obstacles.forEach(drawObstacle);
     drawFlag();
     drawBoat();
-    // logique
+  }
+
+  function loop(ts){
+    const dt=Math.min(.033, (ts-lastTs)/1000||0); lastTs=ts;
+    draw(ts/1000);
     if(state==='playing' || state==='finale') update(dt, ts/1000);
     raf=requestAnimationFrame(loop);
   }
 
-  // === IO ===
+  // IO
   window.addEventListener('keydown', (e)=>{
     if(e.key===' '){
       e.preventDefault();
@@ -431,27 +395,26 @@
       keys.delete(e.key);
     }
   });
+
   startBtn.addEventListener('click', ()=>{ if(state==='intro'){ resetFromIntro(); tryPlayAudio(); }});
   replayBtn.addEventListener('click', ()=>{ win.style.display='none'; state='intro'; intro.style.display='flex'; scheduleAutoStart(); });
 
-  function showIntro(){
-    state='intro'; intro.style.display='flex'; scheduleAutoStart(); tryPlayAudio();
-  }
+  function showIntro(){ state='intro'; intro.style.display='flex'; scheduleAutoStart(); tryPlayAudio(); }
 
-  // === Init ===
+  // Init
   makePatterns();
   applyBuffer();
   showIntro();
   lastTs=now();
   requestAnimationFrame(loop);
 
-  // Self-tests rapides (console)
+  // Self-tests (console)
   (function(){
     const res=[]; const assert=(c,m)=>res.push({ok:!!c,msg:m});
-    assert(RED_MIN<0.5 && RED_MAX<=0.5,'bouées rouges centrées-gauche');
-    assert(GREEN_MIN>=0.5 && GREEN_MAX>0.5,'bouées vertes centrées-droite');
-    assert(typeof waterPat==='object','pattern eau ok');
-    console.log('[HastaLuego pixel tests]', res.filter(r=>r.ok).length+'/'+res.length, res);
+    assert(RED_MIN>=0.30 && RED_MAX<=0.50,'fenêtre bouées rouges 30–50%');
+    assert(GREEN_MIN>=0.50 && GREEN_MAX<=0.70,'fenêtre bouées vertes 50–70%');
+    assert(OBSTACLE_TARGET===12,'seuil obstacles = 12');
+    console.log('[HastaLuego tests]', res.filter(r=>r.ok).length+'/'+res.length, res);
   })();
 })();
 </script>
