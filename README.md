@@ -1,27 +1,30 @@
-# HastaLuego
+# Hasta Luego
 
-Un mini-jeu où tu dois naviguer ton bateau à travers des obstacles pour atteindre le port.
+Un mini-jeu en pixel art où tu dois naviguer ton bateau à travers des obstacles pour atteindre le port.
 
 ## Description
 
-Bienvenue dans HastaLuego ! Dans ce jeu, tu dois naviguer ton bateau à travers des obstacles pour atteindre le port. Utilise les touches directionnelles pour éviter les rochers et les bouées.
+Bienvenue dans "Hasta Luego" ! Ton objectif est de naviguer à travers les obstacles pour atteindre le port. Utilise les touches directionnelles pour contrôler ton bateau et évite les rochers et les bouées.
 
-## Instructions
+## Installation
 
-1. Appuie sur la barre d'espace pour commencer le jeu.
-2. Utilise les touches directionnelles pour déplacer ton bateau.
-3. Évite les rochers et les bouées pour ne pas échouer.
-4. Atteins le port pour gagner.
-
-## Configuration
-
-1. Clone ce dépôt sur ta machine locale.
+1. Clone ce dépôt sur ton ordinateur.
 2. Ouvre le fichier `index.html` dans ton navigateur web.
 
 ## Contrôles
 
-- Flèches directionnelles : pour déplacer le bateau.
-- Barre d'espace : pour commencer ou recommencer le jeu.
+- **Touches directionnelles** : Pour déplacer le bateau.
+- **Barre d'espace** : Pour commencer le jeu.
+
+## Gameplay
+
+1. Le jeu commence avec un écran d'introduction. Appuie sur la barre d'espace pour commencer.
+2. Utilise les touches directionnelles pour éviter les obstacles :
+   - **Rochers** : Évite-les en passant à droite ou à gauche.
+   - **Bouées rouges** : Passe à droite.
+   - **Bouées vertes** : Passe à gauche.
+3. Si tu heurtes un obstacle, le jeu recommence.
+4. Après avoir évité 12 obstacles, dirige-toi vers le drapeau pour gagner.
 
 ## Auteur
 
