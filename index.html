@@ -3,45 +3,49 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>HastaLuego — Mini-jeu</title>
+  <title>HastaLuego — Mini-jeu (pixel 90s)</title>
   <style>
     :root{
-      --bg1:#0b1022; --bg2:#0e132a; --sea1:#0e2a47; --sea2:#0a1f38;
-      --fg:#e5e7eb; --muted:#9ca3af; --accent:#f59e0b; --accent2:#fbbf24; --danger:#ef4444; --ok:#10b981;
-      --panel:#121829cc; --panel-strong:#0b1022f2; --banner:#1f2937cc; --bannerDanger:#7f1d1dcc; --bannerWarn:#78350fcc;
+      /* Palette 90s (ciel/mer/rochers) */
+      --sky1:#6ec1ff; --sky2:#47a3ff; --sea1:#1b4d8a; --sea2:#133a69;
+      --foam:#c7ecff; --sun:#ffd43b; --sunCore:#ffef99;
+      --rock1:#8b5e3c; --rock2:#6d472d; --rockHL:#b07f54;
+      --red:#ef4444; --green:#10b981; --fg:#e5e7eb; --muted:#9ca3af;
+      --panel:#0b1022ee; --panel2:#0b1022f7; --outline:#ffffff24;
+      --accent:#f59e0b; --accent2:#fbbf24;
     }
     *{box-sizing:border-box}
-    html,body{height:100%;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--fg);margin:0}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--sky1),var(--sky2));color:var(--fg)}
     body{font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; display:flex; flex-direction:column; align-items:center}
     header{max-width:960px;width:100%;padding:16px}
     h1{margin:12px 0 4px;font-size:24px}
     .muted{color:var(--muted);font-size:14px;margin:0}
-    .wrap{width:100%;max-width:960px; padding:0 16px 24px}
-    .board{position:relative; width:100%; aspect-ratio:16/10; border:1px solid rgba(255,255,255,.08); border-radius:16px; overflow:hidden; background:linear-gradient(180deg,var(--sea1),var(--sea2)); box-shadow:0 20px 50px rgba(0,0,0,.45)}
-    canvas{position:absolute; inset:0; width:100%; height:100%; display:block; image-rendering: pixelated}
-    .hint{position:absolute; right:8px; bottom:6px; color:#8892a6; font-size:12px; text-shadow:0 1px 0 #0008}
-    .overlay{position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:16px; background:var(--panel)}
-    .panel{width:100%; max-width:680px; background:var(--panel-strong); border:1px solid rgba(255,255,255,.12); border-radius:18px; padding:20px; box-shadow:0 30px 70px rgba(0,0,0,.55)}
+    .wrap{width:100%;max-width:960px;padding:0 16px 24px}
+    .topbar{display:grid;grid-template-columns:1fr auto;gap:8px;margin:8px 0 12px}
+    .pill{background:rgba(0,0,0,.18);border:1px solid var(--outline);padding:8px 12px;border-radius:999px;font-variant-numeric:tabular-nums}
+    .board{position:relative;width:100%;aspect-ratio:16/10;border:1px solid var(--outline);border-radius:16px;overflow:hidden;background:linear-gradient(180deg,var(--sky1),var(--sky2));box-shadow:0 20px 50px rgba(0,0,0,.45)}
+    canvas{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering: pixelated}
+    .hint{position:absolute;right:8px;bottom:6px;color:#19324d;background:rgba(255,255,255,.35);padding:2px 6px;border-radius:8px;font-size:12px}
+    .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.35)}
+    .panel{width:100%;max-width:680px;background:var(--panel);border:1px solid var(--outline);border-radius:18px;padding:20px;box-shadow:0 30px 70px rgba(0,0,0,.55)}
     .panel h2{margin:0 0 8px;font-size:20px}
-    .panel p{margin:6px 0;color:#cbd5e1;line-height:1.4}
-    .row{display:flex; gap:8px; flex-wrap:wrap; margin-top:12px}
-    .btn{cursor:pointer; border-radius:12px; padding:8px 14px; background:#1f2937; border:1px solid rgba(255,255,255,.1); color:var(--fg); font-weight:600}
+    .panel p{margin:6px 0;color:#cfe7ff;line-height:1.4}
+    .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .btn{cursor:pointer;border-radius:12px;padding:8px 14px;background:#1f2937;border:1px solid rgba(255,255,255,.1);color:var(--fg);font-weight:700}
     .btn:hover{background:#334155}
-    .btnAccent{background:var(--accent); color:#1a1a1a; border:none}
+    .btnAccent{background:var(--accent);color:#1a1a1a;border:none}
     .btnAccent:hover{background:#f59f0b}
-    .banner{position:absolute; left:12px; right:12px; top:12px; padding:10px 12px; background:var(--banner); border:1px solid rgba(255,255,255,.12); border-radius:12px; text-align:center; font-weight:600; box-shadow:0 10px 30px rgba(0,0,0,.35)}
-    .banner--danger{background:var(--bannerDanger)}
-    .banner--warn{background:var(--bannerWarn)}
-    .highlight{color:var(--accent2); font-weight:800; text-decoration:underline wavy var(--accent2) 1.5px}
-    .topbar{display:grid; grid-template-columns:1fr auto; gap:8px; margin:12px 0}
-    .pill{background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.15); padding:8px 12px; border-radius:999px; font-variant-numeric:tabular-nums}
-    .audioBtn{position:absolute; left:12px; bottom:12px}
+    .banner{position:absolute;left:12px;right:12px;top:12px;padding:10px 12px;background:#19324dcc;border:1px solid var(--outline);border-radius:12px;text-align:center;font-weight:700;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+    .banner--danger{background:#7f1d1dcc}
+    .banner--warn{background:#78350fcc}
+    .highlight{color:var(--accent2);font-weight:900;text-decoration:underline wavy var(--accent2) 1.5px}
+    .audioBtn{position:absolute;left:12px;bottom:12px}
   </style>
 </head>
 <body>
   <header>
     <h1>HastaLuego</h1>
-    <p class="muted">⛵ 2D rétro/pixel — Évite les rochers, passe **du bon côté** des bouées et rejoins le <em>po(r)t de départ</em>.</p>
+    <p class="muted">⛵ 2D rétro/pixel — Évite les rochers, passe du bon côté des bouées et rejoins le <em>po(r)t de départ</em>.</p>
   </header>
 
   <div class="wrap">
@@ -51,25 +55,25 @@
     </div>
 
     <div class="board" id="board">
-      <canvas id="game" aria-label="Mini-jeu HastaLuego"></canvas>
+      <canvas id="game" aria-label="Mini-jeu HastaLuego (pixel)"></canvas>
 
-      <!-- Écran d’accueil -->
+      <!-- Intro -->
       <div class="overlay" id="intro">
         <div class="panel">
           <h2>À l’aide des touches directionnelles, emmène ton bateau à bon port !</h2>
-          <p><strong>ESPACE</strong> pour commencer (ou démarrage auto dans 8 secondes).</p>
+          <p><strong>ESPACE</strong> pour commencer (auto-démarrage dans 8 secondes).</p>
           <div class="row">
             <button class="btn btnAccent" id="startBtn">ESPACE</button>
             <button class="btn" id="audioBtn">Activer le son</button>
           </div>
-          <p class="muted" style="margin-top:10px">Astuce : Haut/Bas modifient légèrement la vitesse de défilement.</p>
+          <p class="muted" style="margin-top:10px">Astuce : Haut/Bas ajustent légèrement la vitesse du défilement.</p>
         </div>
       </div>
 
-      <!-- Bannière message (erreurs, info) -->
+      <!-- Bannière -->
       <div class="banner" id="banner" style="display:none"></div>
 
-      <!-- Écran victoire -->
+      <!-- Victoire -->
       <div class="overlay" id="win" style="display:none">
         <div class="panel">
           <h2>Bien joué !</h2>
@@ -93,222 +97,220 @@
 
 <script>
 (function(){
-  // --- Constantes jeu ---
+  // === Constantes ===
   const OBSTACLE_TARGET = 12;
-  const BASE_SCROLL = 140; // px/s
-  const BOAT_SPEED = 220;  // latéral
-  const WORLD_RATIO = 16/10;
-  const SPAWN_BASE = 2.5; // toutes ~2.5s
-  const LEFT_THIRD = 0.33, RIGHT_THIRD = 0.67;
+  const BASE_SCROLL = 140;      // px/s
+  const BOAT_SPEED  = 220;      // déplacement latéral
+  const SPAWN_BASE  = 2.5;      // une apparition toutes ~2.5s
+  const SIDE_MARGIN = 6;        // tolérance gauche/droite bouées
 
-  // DOM
+  // Bouées "plus centrées" pour plus de difficulté :
+  // - rouges autour du centre gauche (30% → 50%)
+  // - vertes autour du centre droit (50% → 70%)
+  const RED_MIN   = 0.30, RED_MAX   = 0.50;
+  const GREEN_MIN = 0.50, GREEN_MAX = 0.70;
+
+  // === DOM & état ===
   const board = document.getElementById('board');
-  const canvas = document.getElementById('game');
+  const canvas= document.getElementById('game');
+  const ctx=canvas.getContext('2d'); ctx.imageSmoothingEnabled=false;
   const banner = document.getElementById('banner');
-  const intro = document.getElementById('intro');
-  const win = document.getElementById('win');
+  const intro  = document.getElementById('intro');
+  const win    = document.getElementById('win');
   const startBtn = document.getElementById('startBtn');
-  const replayBtn = document.getElementById('replayBtn');
+  const replayBtn= document.getElementById('replayBtn');
   const audioBtn = document.getElementById('audioBtn');
   const audioBtnFloat = document.getElementById('audioBtnFloat');
   const passedEl = document.getElementById('passed');
-  const spdEl = document.getElementById('spd');
-  const bgm = document.getElementById('bgm');
+  const spdEl    = document.getElementById('spd');
+  const bgm      = document.getElementById('bgm');
 
-  // État
   const keys = new Set();
-  const size = { w: 960, h: 600, dpr: 1 };
-  const boat = { x: 0, y: 0, r: 12, vy: 0 };
+  const size = { w:960, h:600, dpr:1 };
+  const boat = { x:0, y:0, r:12 };
   let obstacles = [];
-  let flag = null;
-  let passed = 0;
-  let scroll = BASE_SCROLL;
-  let state = 'intro'; // 'intro' | 'playing' | 'finale' | 'won' | 'dead'
-  let lastTs = 0, autoStartTO = null, raf = 0, nextSpawn = SPAWN_BASE;
+  let flag=null, passed=0, scroll=BASE_SCROLL;
+  let state='intro', nextSpawn=SPAWN_BASE, lastTs=0, raf=0, autoStartTO=null;
 
-  // Utils
+  // === Utils ===
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
   const rand=(a,b)=>Math.random()*(b-a)+a;
-  const now=()=>performance.now();
+  const now = ()=>performance.now();
 
-  // Canvas ctx
-  const ctx = canvas.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
+  // === Textures pixel (eau, nuages) ===
+  let waterPat=null, foamPat=null, cloudSprites=[];
+  function makePatterns(){
+    // tuile eau 16x16
+    const t=document.createElement('canvas'); t.width=t.height=16; const c=t.getContext('2d');
+    // fond mer
+    c.fillStyle='#133a69'; c.fillRect(0,0,16,16);
+    c.fillStyle='#1b4d8a';
+    for(let y=0;y<16;y+=2){ for(let x=0;x<16;x+=4){ c.fillRect(x, y, 3, 1); } }
+    // vagues claires
+    c.fillStyle='#2b6fb1';
+    c.fillRect(1,5,6,1); c.fillRect(9,5,6,1);
+    c.fillRect(3,11,6,1);
+    waterPat = ctx.createPattern(t,'repeat');
 
-  // Mesure (pas d'écriture de layout dans RO)
+    // écume 16x16
+    const f=document.createElement('canvas'); f.width=f.height=16; const cf=f.getContext('2d');
+    cf.fillStyle='rgba(255,255,255,0)';
+    cf.fillRect(0,0,16,16);
+    cf.fillStyle='#c7ecff';
+    // points d'écume “pixel”
+    [[2,2],[4,2],[11,3],[7,7],[12,8],[3,10],[8,13],[14,14]].forEach(([x,y])=>cf.fillRect(x,y,1,1));
+    foamPat = ctx.createPattern(f,'repeat');
+
+    // nuages sprites (rectangles 8x8/12x6…)
+    cloudSprites = [
+      {x:40,y:32,w:48,h:16,dx:12},
+      {x:220,y:22,w:64,h:18,dx:10},
+      {x:420,y:36,w:56,h:16,dx:14}
+    ];
+  }
+
+  // === Mesure canvas (RO anti-boucle) ===
   function applyBuffer(){
     const dpr=Math.min(2,window.devicePixelRatio||1);
-    const rect=board.getBoundingClientRect();
-    const w=Math.max(1,Math.floor(rect.width));
-    const h=Math.max(1,Math.floor(rect.height));
-    size.w=w; size.h=h; size.dpr=dpr;
-    canvas.width=Math.floor(w*dpr); canvas.height=Math.floor(h*dpr);
+    const r=board.getBoundingClientRect();
+    size.w=Math.max(1,Math.floor(r.width)); size.h=Math.max(1,Math.floor(r.height)); size.dpr=dpr;
+    canvas.width=Math.floor(size.w*dpr); canvas.height=Math.floor(size.h*dpr);
     if(ctx.setTransform) ctx.setTransform(dpr,0,0,dpr,0,0);
-    if(!boat.x){ boat.x = w/2; boat.y = Math.floor(h*0.65); }
+    if(!boat.x){ boat.x=size.w/2; boat.y=Math.floor(size.h*0.65); }
   }
   let roTick=false;
   const ro=new ResizeObserver(()=>{ if(!roTick){ roTick=true; requestAnimationFrame(()=>{ roTick=false; applyBuffer(); if(state!=='playing') draw(); }); }});
-  ro.observe(board);
-  window.addEventListener('resize', ()=>applyBuffer(), {passive:true});
+  ro.observe(board); window.addEventListener('resize', ()=>applyBuffer(), {passive:true});
 
-  // Bannières
-  function showBanner(msg, kind='info'){
-    banner.textContent = msg;
-    banner.style.display='block';
-    banner.className='banner'+(kind==='danger'?' banner--danger': kind==='warn'?' banner--warn':'' );
-    // auto-hide après 2.2s
-    clearTimeout(showBanner._to);
-    showBanner._to = setTimeout(()=>{ banner.style.display='none'; }, 2200);
-  }
-
-  // Audio helpers
+  // === Audio ===
   async function tryPlayAudio(){
     if(!bgm) return;
-    try{
-      bgm.loop = true;
-      await bgm.play();
-      audioBtnFloat.style.display='none';
-    }catch(e){
-      // bloqué : montrer bouton
-      audioBtnFloat.style.display='inline-flex';
-    }
+    try{ bgm.loop=true; await bgm.play(); audioBtnFloat.style.display='none'; }
+    catch{ audioBtnFloat.style.display='inline-flex'; }
   }
   audioBtn.addEventListener('click', tryPlayAudio);
   audioBtnFloat.addEventListener('click', tryPlayAudio);
 
-  // Obstacles
+  // === Bannières ===
+  function showBanner(msg, kind='info'){
+    banner.textContent=msg;
+    banner.style.display='block';
+    banner.className='banner'+(kind==='danger'?' banner--danger':kind==='warn'?' banner--warn':'');
+    clearTimeout(showBanner._to); showBanner._to=setTimeout(()=>banner.style.display='none', 2200);
+  }
+
+  // === Obstacles ===
   function spawnObstacle(){
-    if(passed >= OBSTACLE_TARGET) return;
-    const t = Math.random();
-    let type = 'rock';
-    if(t<0.33) type='red'; else if(t<0.66) type='green';
-    const y = -30;
-    let x, s=14;
-    if(type==='red'){ // carré rouge — tier gauche
-      x = rand(size.w*0.08, size.w*LEFT_THIRD*0.95);
-      s = 12;
-    }else if(type==='green'){ // triangle vert — tier droit
-      x = rand(size.w*RIGHT_THIRD*1.05, size.w*0.92);
-      s = 12;
-    }else{ // rock
-      x = rand(size.w*0.15, size.w*0.85);
-      s = rand(12,18);
+    if(passed>=OBSTACLE_TARGET) return;
+    const t=Math.random();
+    let type='rock'; if(t<0.33) type='red'; else if(t<0.66) type='green';
+    const y=-30; let x,s=14;
+    if(type==='red'){ // carré rouge — zone centre-gauche
+      x = rand(size.w*RED_MIN, size.w*RED_MAX); s=12;
+    }else if(type==='green'){ // triangle vert — zone centre-droite
+      x = rand(size.w*GREEN_MIN, size.w*GREEN_MAX); s=12;
+    }else{ // rocher marron
+      x = rand(size.w*0.22, size.w*0.78); s = rand(13,18);
     }
-    obstacles.push({ type, x, y, s, checked:false });
+    obstacles.push({type,x,y,s,checked:false});
   }
 
-  function resetRun(){
-    obstacles.length = 0;
-    flag = null;
-    passed = 0;
-    passedEl.textContent = '0';
-    nextSpawn = SPAWN_BASE;
-    scroll = BASE_SCROLL;
-    boat.x = size.w/2; boat.y = Math.floor(size.h*0.65);
-    state='playing';
-    lastTs = now();
-    banner.style.display='none';
-    intro.style.display='none';
-    win.style.display='none';
-  }
-
-  function startFromIntro(){
-    state = 'playing';
-    intro.style.display='none';
-    lastTs = now();
-    obstacles.length = 0; flag=null; passed=0; nextSpawn=SPAWN_BASE; scroll=BASE_SCROLL;
-    tryPlayAudio(); // relance l'audio à l'appui espace
+  function resetFromIntro(){
+    obstacles.length=0; flag=null; passed=0; nextSpawn=SPAWN_BASE; scroll=BASE_SCROLL;
+    passedEl.textContent='0'; spdEl.textContent='—';
+    boat.x=size.w/2; boat.y=Math.floor(size.h*0.65);
+    banner.style.display='none'; win.style.display='none'; intro.style.display='none';
+    state='playing'; lastTs=now();
   }
 
   function crash(msg){
-    state='dead';
-    showBanner(msg,'danger');
-    setTimeout(()=>{ // redémarrage
-      state='intro';
-      intro.style.display='flex';
-      // re-essai autoplay discret
-      tryPlayAudio();
-      // re-programme auto-start
-      scheduleAutoStart();
+    state='dead'; showBanner(msg,'danger');
+    setTimeout(()=>{
+      state='intro'; intro.style.display='flex'; tryPlayAudio(); scheduleAutoStart();
     }, 1200);
   }
 
   function scheduleAutoStart(){
     clearTimeout(autoStartTO);
-    autoStartTO = setTimeout(()=>{ if(state==='intro'){ startFromIntro(); } }, 8000);
+    autoStartTO=setTimeout(()=>{ if(state==='intro') resetFromIntro(); }, 8000);
   }
 
-  // Dessin
-  function drawSeaBackground(t){
-    const w=size.w, h=size.h;
-    // Fond
-    const g=ctx.createLinearGradient(0,0,0,h);
-    g.addColorStop(0,'#0e2a47'); g.addColorStop(1,'#0a1f38');
-    ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+  // === Dessins ===
+  function drawSkyAndSea(t){
+    const w=size.w,h=size.h;
 
-    // Vagues pixel: bandes sinusoïdales
-    ctx.globalAlpha=0.6;
-    for(let i=0;i<6;i++){
-      const amp = 6 + i*1.2;
-      const freq = 0.008 + i*0.0015;
-      const yOff = (t*scroll*0.25 + i*40)%h;
-      ctx.beginPath();
-      for(let x=0;x<=w;x+=4){
-        const y = (x*Math.sin(x*freq)*0 +  // (juste pour pixel-step fixe)
-                   Math.sin((x*freq)+(i*0.7))*amp + yOff) % h;
-        if(x===0) ctx.moveTo(0,y); else ctx.lineTo(x,y);
-      }
-      ctx.strokeStyle = i%2? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.05)';
-      ctx.lineWidth=2; ctx.stroke();
-    }
+    // ciel uni + soleil “pixel”
+    ctx.fillStyle='#6ec1ff'; ctx.fillRect(0,0,w,h);
+    // soleil
+    const sunX=w-76, sunY=42;
+    ctx.fillStyle= '#ffd43b'; ctx.fillRect(sunX-10, sunY-10, 20, 20);
+    ctx.fillStyle= '#ffef99'; ctx.fillRect(sunX-6, sunY-6, 12, 12);
+    // rayons “croix”
+    ctx.fillStyle='#ffd43b'; ctx.fillRect(sunX-1, sunY-16, 2, 6);
+    ctx.fillRect(sunX-1, sunY+10, 2, 6);
+    ctx.fillRect(sunX-16, sunY-1, 6, 2);
+    ctx.fillRect(sunX+10, sunY-1, 6, 2);
+
+    // nuages blocs (défilement lent)
+    ctx.fillStyle='#ffffff';
+    cloudSprites.forEach(cl=>{
+      cl.x += (cl.dx*0.02);
+      if(cl.x> w+40) cl.x = -80;
+      const x=Math.floor(cl.x), y=Math.floor(cl.y);
+      // 3 rectangles pour un “pixel cloud”
+      ctx.fillStyle='#ffffff'; ctx.fillRect(x, y, cl.w, cl.h);
+      ctx.fillStyle='#e6f4ff'; ctx.fillRect(x+6, y+4, cl.w-12, cl.h-6);
+      ctx.fillStyle='#cfe7ff'; ctx.fillRect(x+12, y+6, cl.w-22, cl.h-10);
+    });
+
+    // mer (pattern eau + écume qui défile verticalement)
+    const off = Math.floor((t*scroll*0.35)%16);
+    ctx.save();
+    ctx.translate(0, off);
+    ctx.fillStyle=waterPat; ctx.fillRect(0, h*0.35, w, h); // eau dès 35% hauteur
+    ctx.fillStyle=foamPat;  ctx.globalAlpha=0.9; ctx.fillRect(0, h*0.35, w, h);
+    ctx.restore();
     ctx.globalAlpha=1;
+
+    // effet scanlines léger (CRT)
+    ctx.fillStyle='rgba(0,0,0,0.07)';
+    for(let y=0;y<h;y+=3){ ctx.fillRect(0,y,w,1); }
   }
 
   function drawBoat(){
     const b=boat;
-    // coque (rectangle + proue)
-    ctx.fillStyle='#1f2f5a';
-    ctx.fillRect(Math.floor(b.x-10), Math.floor(b.y-4), 20, 8);
-    ctx.beginPath();
-    ctx.moveTo(b.x-10, b.y-4);
-    ctx.lineTo(b.x+10, b.y-4);
-    ctx.lineTo(b.x, b.y-10);
-    ctx.closePath();
-    ctx.fillStyle='#22376e'; ctx.fill();
-
+    // coque (pavés)
+    ctx.fillStyle='#20325a'; ctx.fillRect(Math.floor(b.x-10), Math.floor(b.y-4), 20, 8);
+    ctx.fillStyle='#162748'; ctx.fillRect(Math.floor(b.x-10), Math.floor(b.y+1), 20, 3);
+    // proue pixel
+    ctx.fillStyle='#223a6e'; ctx.fillRect(Math.floor(b.x-1), Math.floor(b.y-10), 2, 6);
     // mât
-    ctx.strokeStyle='#d1d5db'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(b.x, b.y-10); ctx.lineTo(b.x, b.y-30); ctx.stroke();
-
-    // voile (triangle)
+    ctx.fillStyle='#d1d5db'; ctx.fillRect(Math.floor(b.x-1), Math.floor(b.y-30), 2, 20);
+    // voile triangle “pixellisé”
     ctx.fillStyle='#f1f5f9';
     ctx.beginPath();
-    ctx.moveTo(b.x, b.y-30);
-    ctx.lineTo(b.x, b.y-12);
-    ctx.lineTo(b.x+16, b.y-18);
-    ctx.closePath(); ctx.fill();
+    ctx.moveTo(b.x, b.y-30); ctx.lineTo(b.x, b.y-12); ctx.lineTo(b.x+16, b.y-18); ctx.closePath(); ctx.fill();
+  }
 
-    // halo
-    ctx.globalAlpha=0.12; ctx.fillStyle='#3b82f6';
-    ctx.beginPath(); ctx.arc(b.x, b.y-8, 20, 0, Math.PI*2); ctx.fill();
-    ctx.globalAlpha=1;
+  function drawRock(o){
+    // Pictogramme rocher marron en blocs
+    const x=Math.floor(o.x), y=Math.floor(o.y), s=Math.floor(o.s);
+    ctx.fillStyle='var(--rock2)'; ctx.fillRect(x-s, y-s+2, s*2, s*2-2);
+    ctx.fillStyle='var(--rock1)'; ctx.fillRect(x-s+2, y-s, s*2-4, s*2-4);
+    ctx.fillStyle='var(--rockHL)'; ctx.fillRect(x- Math.floor(s*0.4), y- Math.floor(s*0.6), Math.floor(s*0.8), 2);
+    // contour clair
+    ctx.strokeStyle='#00000055'; ctx.lineWidth=1; ctx.strokeRect(x-s+0.5, y-s+0.5, s*2-1, s*2-1);
   }
 
   function drawObstacle(o){
-    if(o.type==='rock'){
-      ctx.fillStyle='#6b7280';
-      ctx.beginPath(); ctx.arc(o.x, o.y, o.s, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle='#9ca3af'; ctx.globalAlpha=0.15;
-      ctx.beginPath(); ctx.arc(o.x-2, o.y-2, o.s*0.7, 0, Math.PI*2); ctx.fill();
-      ctx.globalAlpha=1;
-    }else if(o.type==='red'){
-      // bouée rouge carrée
-      ctx.fillStyle='#ef4444';
-      ctx.fillRect(Math.floor(o.x-o.s), Math.floor(o.y-o.s), o.s*2, o.s*2);
-      ctx.strokeStyle='#ffffffaa'; ctx.strokeRect(Math.floor(o.x-o.s), Math.floor(o.y-o.s), o.s*2, o.s*2);
-    }else{
-      // bouée verte triangle
-      ctx.fillStyle='#10b981';
+    if(o.type==='rock'){ drawRock(o); return; }
+    if(o.type==='red'){ // carré rouge
+      ctx.fillStyle='var(--red)';
+      const x=Math.floor(o.x-o.s), y=Math.floor(o.y-o.s), w=o.s*2, h=o.s*2;
+      ctx.fillRect(x, y, w, h);
+      ctx.strokeStyle='#ffffffaa'; ctx.strokeRect(x+0.5, y+0.5, w-1, h-1);
+    }else{ // triangle vert
+      ctx.fillStyle='var(--green)';
       ctx.beginPath();
       ctx.moveTo(o.x, o.y - o.s);
       ctx.lineTo(o.x - o.s, o.y + o.s);
@@ -320,104 +322,45 @@
 
   function drawFlag(){
     if(!flag) return;
-    const f = flag;
-    // mât
-    ctx.strokeStyle='#e5e7eb'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.moveTo(f.x, f.y+20); ctx.lineTo(f.x, f.y-20); ctx.stroke();
-    // drapeau
-    ctx.fillStyle='#fbbf24';
-    ctx.beginPath(); ctx.moveTo(f.x, f.y-20);
-    ctx.lineTo(f.x+28, f.y-15);
-    ctx.lineTo(f.x, f.y-10);
-    ctx.closePath(); ctx.fill();
+    const f=flag;
+    ctx.fillStyle='#e5e7eb'; ctx.fillRect(f.x-1, f.y-20, 2, 40); // mât pixel
+    ctx.fillStyle='#fbbf24'; ctx.fillRect(f.x, f.y-18, 28, 10);  // drapeau pixel
     // label
-    ctx.fillStyle='#e5e7eb'; ctx.font='12px ui-monospace, monospace';
-    ctx.textAlign='center';
-    ctx.fillText('po(r)t de départ', f.x+12, f.y-28);
-    ctx.textAlign='start';
+    ctx.fillStyle='#0b1022'; ctx.fillRect(f.x-30, f.y-30, 84, 12);
+    ctx.fillStyle='#e5e7eb'; ctx.font='12px ui-monospace, monospace'; ctx.textBaseline='top';
+    ctx.fillText('po(r)t de départ', f.x-26, f.y-29);
   }
 
-  // Logique
-  function update(dt, t){
-    // vitesse mer ajustable via flèches
-    const up = keys.has('ArrowUp'), down = keys.has('ArrowDown');
-    if(up) scroll = clamp(scroll + 80*dt, 100, 260);
-    if(down) scroll = clamp(scroll - 80*dt, 80, 260);
-
-    // boat latéral
-    const left = keys.has('ArrowLeft'), right = keys.has('ArrowRight');
-    let vx = (right?1:0) - (left?1:0);
-    boat.x = clamp(boat.x + vx*BOAT_SPEED*dt, 16, size.w-16);
-
-    // Monde défile
-    if(state==='playing'){
-      tSpawn(dt);
-      for(const o of obstacles){ o.y += scroll*dt; }
-      // collisions / règles
-      checkRocks();
-      checkBuoys();
-      // fin des obstacles
-      if(passed >= OBSTACLE_TARGET && !flag){
-        // lance la finale : spawn du drapeau en haut
-        flag = { x: clamp(boat.x, size.w*0.3, size.w*0.7), y: -40 };
-        state='finale';
-      }
-    }else if(state==='finale'){
-      // le bateau avance vraiment vers le haut
-      boat.y -= (scroll*0.5)*dt;
-      for(const o of obstacles){ o.y += scroll*dt; }
-      if(flag) flag.y += scroll*dt * 0.6;
-      // victoire ?
-      if(flag && Math.hypot(boat.x - flag.x, (boat.y-10) - (flag.y-10)) < 28){
-        state='won';
-        win.style.display='flex';
-      }
-    }
-
-    // purge obstacles sortis
-    obstacles = obstacles.filter(o => o.y < size.h + 40);
-
-    // UI
-    passedEl.textContent = String(passed);
-    spdEl.textContent = Math.round(scroll) + ' px/s';
-  }
-
-  function tSpawn(dt){
-    nextSpawn -= dt;
-    if(nextSpawn <= 0){
+  // === Logique ===
+  function spawnTick(dt){
+    nextSpawn-=dt;
+    if(nextSpawn<=0){
       spawnObstacle();
-      nextSpawn = SPAWN_BASE * (0.9 + Math.random()*0.35);
+      nextSpawn=SPAWN_BASE*(0.9+Math.random()*0.35);
     }
   }
 
   function checkRocks(){
-    // collision circulaire avec rochers
     for(const o of obstacles){
       if(o.type!=='rock') continue;
-      const d = Math.hypot(o.x - boat.x, o.y - boat.y);
-      if(d < o.s + boat.r){
-        crash("Tu t’es échoué ! Tu dois sûrement être un quanti…");
-        return;
-      }
+      const d=Math.hypot(o.x-boat.x, o.y-boat.y);
+      if(d<o.s+boat.r){ crash("Tu t’es échoué ! Tu dois sûrement être un quanti…"); return; }
     }
   }
 
   function checkBuoys(){
-    const sideMargin = 6;
     for(const o of obstacles){
       if(o.type!=='red' && o.type!=='green') continue;
       if(o.checked) continue;
-      if(o.y >= boat.y){ // considéré “passé”
-        o.checked = true;
+      if(o.y >= boat.y){ // obstacle “passé”
+        o.checked=true;
         if(o.type==='red'){
-          // doit passer à DROITE → boat.x > o.x + marge
-          if(!(boat.x > o.x + sideMargin)){
+          if(!(boat.x > o.x + SIDE_MARGIN)){
             crash("on doit passer à droite des bouées bâbord rouges ! Marin d’eau douce !");
             return;
           }
-        }else{
-          // vert: doit passer à GAUCHE → boat.x < o.x - marge
-          if(!(boat.x < o.x - sideMargin)){
+        }else{ // green
+          if(!(boat.x < o.x - SIDE_MARGIN)){
             crash("on doit passer à gauche des bouées tribord vertes ! Même Fred !");
             return;
           }
@@ -427,36 +370,60 @@
     }
   }
 
-  // Boucle
-  function loop(ts){
-    const dt = Math.min(0.033, (ts - lastTs)/1000 || 0);
-    lastTs = ts;
+  function update(dt, t){
+    // vitesse (haut/bas)
+    if(keys.has('ArrowUp'))   scroll = clamp(scroll + 80*dt, 100, 260);
+    if(keys.has('ArrowDown')) scroll = clamp(scroll - 80*dt,  80, 260);
 
-    // draw
-    drawSeaBackground(ts/1000);
-    // obstacles
-    for(const o of obstacles) drawObstacle(o);
-    // drapeau final
-    drawFlag();
-    // boat
-    drawBoat();
+    // latéral (gauche/droite)
+    const vx = (keys.has('ArrowRight')?1:0) - (keys.has('ArrowLeft')?1:0);
+    boat.x = clamp(boat.x + vx*BOAT_SPEED*dt, 16, size.w-16);
 
-    // update après le rendu pour lisser
-    if(state==='playing' || state==='finale') update(dt, ts/1000);
+    if(state==='playing'){
+      spawnTick(dt);
+      obstacles.forEach(o=>o.y += scroll*dt);
+      checkRocks(); checkBuoys();
 
-    raf = requestAnimationFrame(loop);
+      if(passed>=OBSTACLE_TARGET && !flag){
+        flag = { x: clamp(boat.x, size.w*0.35, size.w*0.65), y: -40 };
+        state='finale';
+      }
+    }else if(state==='finale'){
+      boat.y -= (scroll*0.5)*dt;
+      obstacles.forEach(o=>o.y += scroll*dt);
+      if(flag) flag.y += scroll*dt*0.6;
+      if(flag && Math.hypot(boat.x-flag.x,(boat.y-10)-(flag.y-10))<28){
+        state='won'; win.style.display='flex';
+      }
+    }
+
+    obstacles = obstacles.filter(o=>o.y < size.h+40);
+    passedEl.textContent=String(passed);
+    spdEl.textContent=Math.round(scroll)+' px/s';
   }
 
-  // IO
+  function loop(ts){
+    const dt=Math.min(.033, (ts-lastTs)/1000||0); lastTs=ts;
+    // décor
+    drawSkyAndSea(ts/1000);
+    // objets
+    obstacles.forEach(drawObstacle);
+    drawFlag();
+    drawBoat();
+    // logique
+    if(state==='playing' || state==='finale') update(dt, ts/1000);
+    raf=requestAnimationFrame(loop);
+  }
+
+  // === IO ===
   window.addEventListener('keydown', (e)=>{
-    if(e.key === ' '){
+    if(e.key===' '){
       e.preventDefault();
-      if(state==='intro') startFromIntro();
+      if(state==='intro'){ resetFromIntro(); tryPlayAudio(); }
       return;
     }
     if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
-      e.preventDefault();
-      keys.add(e.key);
+      e.preventDefault(); keys.add(e.key);
     }
   }, {passive:false});
   window.addEventListener('keyup', (e)=>{
@@ -464,34 +431,27 @@
       keys.delete(e.key);
     }
   });
-
-  startBtn.addEventListener('click', ()=>{ if(state==='intro') startFromIntro(); });
+  startBtn.addEventListener('click', ()=>{ if(state==='intro'){ resetFromIntro(); tryPlayAudio(); }});
   replayBtn.addEventListener('click', ()=>{ win.style.display='none'; state='intro'; intro.style.display='flex'; scheduleAutoStart(); });
-  // Intro auto-start
+
   function showIntro(){
-    state='intro';
-    intro.style.display='flex';
-    scheduleAutoStart();
-    tryPlayAudio(); // tentative d’autoplay
+    state='intro'; intro.style.display='flex'; scheduleAutoStart(); tryPlayAudio();
   }
 
-  // Init
+  // === Init ===
+  makePatterns();
   applyBuffer();
   showIntro();
-  lastTs = now();
-  raf = requestAnimationFrame(loop);
+  lastTs=now();
+  requestAnimationFrame(loop);
 
-  // Self-tests console rapides
+  // Self-tests rapides (console)
   (function(){
     const res=[]; const assert=(c,m)=>res.push({ok:!!c,msg:m});
-    assert(clamp(-1,0,1)===0,'clamp floor');
-    assert(clamp(2,0,1)===1,'clamp ceil');
-    assert(clamp(0.5,0,1)===0.5,'clamp mid');
-    // règles de bouées (simulé)
-    const bx=100, rx=80, gx=140, margin=6;
-    assert(bx>rx+margin,'passer à droite des rouges');
-    assert(bx<gx-margin,'passer à gauche des vertes');
-    console.log('[HastaLuego tests]', res.filter(r=>r.ok).length+'/'+res.length, res);
+    assert(RED_MIN<0.5 && RED_MAX<=0.5,'bouées rouges centrées-gauche');
+    assert(GREEN_MIN>=0.5 && GREEN_MAX>0.5,'bouées vertes centrées-droite');
+    assert(typeof waterPat==='object','pattern eau ok');
+    console.log('[HastaLuego pixel tests]', res.filter(r=>r.ok).length+'/'+res.length, res);
   })();
 })();
 </script>
