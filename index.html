@@ -8,146 +8,99 @@
         body {
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            background-color: #000;
-            font-family: 'Press Start 2P', cursive;
-            color: white;
-            text-align: center;
-            user-select: none;
-        }
-
-        #gameCanvas {
-            display: block;
-            margin: 0 auto;
-            background-color: #1a6bb0;
-        }
-
-        #startScreen, #endScreen, #gameOverScreen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            background-color: rgba(0, 0, 0, 0.7);
+            height: 100vh;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Press Start 2P', cursive;
+        }
+        #gameCanvas {
+            background-color: #1a1a2e;
+            border: 4px solid #1a1a2e;
+        }
+        #startScreen, #endScreen {
+            position: absolute;
             color: white;
+            text-align: center;
+            pointer-events: none;
+        }
+        #startScreen {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             font-size: 16px;
-            z-index: 10;
         }
-
-        #gameOverScreen {
-            display: none;
-        }
-
         #endScreen {
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 16px;
             display: none;
         }
-
-        .highlight {
-            color: #ffd700;
-            font-weight: bold;
-            text-decoration: underline;
-        }
-
         canvas {
             display: block;
+        }
+        .emphasis {
+            color: #ffd700;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
     <div id="startScreen">
-        <h1>À l'aide des touches directionnelles, emmène ton bateau à bon port !</h1>
+        <p>À l'aide des touches directionnelles, emmène ton bateau à bon port !</p>
         <p>ESPACE pour commencer</p>
     </div>
-    <div id="gameOverScreen">
-        <h1 id="gameOverMessage">Game Over</h1>
-        <p>Appuyez sur ESPACE pour recommencer</p>
-    </div>
     <div id="endScreen">
-        <h1>Bien joué !</h1>
+        <p>Bien joué !</p>
         <p>Après 7 ans dans le même bateau, je vais changer d'équipage et quitter Harris pour une autre aventure.</p>
-        <p>Tu as prouvé ta valeur aujourd'hui ; je t'invite à rejoindre de la même façon mon pot de départ le <span class="highlight">jeudi 6 novembre</span>, à la cafèt, avant de se déhaler vers une autre destination plus festive !</p>
+        <p>Tu as prouvé ta valeur aujourd'hui ; je t'invite à rejoindre de la même façon mon pot de départ le <span class="emphasis">jeudi 6 novembre</span>, à la cafèt, avant de se déhaler vers une autre destination plus festive !</p>
     </div>
     <canvas id="gameCanvas" width="400" height="600"></canvas>
-
+    <audio id="gameMusic" loop>
+        <source src="hasta_luego.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
     <script>
-        // Initialisation des variables
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const startScreen = document.getElementById('startScreen');
         const endScreen = document.getElementById('endScreen');
-        const gameOverScreen = document.getElementById('gameOverScreen');
-        const gameOverMessage = document.getElementById('gameOverMessage');
+        const gameMusic = document.getElementById('gameMusic');
 
         // Variables du jeu
-        let gameRunning = false;
+        let gameStarted = false;
         let gameOver = false;
-        let obstacles = [];
-        let obstacleCount = 0;
         let boatX = canvas.width / 2;
         let boatY = canvas.height - 100;
+        let obstacles = [];
+        let obstacleTimer = 0;
+        let score = 0;
+        let gameStartTime = 0;
         let backgroundY = 0;
-        let obstacleInterval;
-        let music;
-
-        // Fonction pour commencer le jeu
-        function startGame() {
-            gameRunning = true;
-            gameOver = false;
-            obstacles = [];
-            obstacleCount = 0;
-            startScreen.style.display = 'none';
-            endScreen.style.display = 'none';
-            gameOverScreen.style.display = 'none';
-
-            // Démarrer la musique (à ajouter plus tard)
-            // music = new Audio('hasta_luego.mp3');
-            // music.loop = true;
-            // music.play();
-
-            // Démarrer le jeu
-            gameLoop();
-
-            // Générer des obstacles
-            obstacleInterval = setInterval(generateObstacle, 2000);
-        }
-
-        // Fonction pour générer des obstacles
-        function generateObstacle() {
-            if (obstacleCount >= 12) {
-                clearInterval(obstacleInterval);
-                return;
-            }
-
-            const obstacleTypes = ['rock', 'redBuoy', 'greenBuoy'];
-            const randomType = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
-            const x = Math.random() * (canvas.width - 40) + 20;
-            obstacles.push({ type: randomType, x: x, y: -30 });
-            obstacleCount++;
-        }
+        let gameSpeed = 2;
 
         // Fonction pour dessiner le bateau
         function drawBoat() {
-            ctx.fillStyle = '#8B4513'; // Couleur marron pour le bateau
+            ctx.fillStyle = '#8B4513';
             ctx.fillRect(boatX - 10, boatY - 20, 20, 40);
-            ctx.fillStyle = '#FFFFFF'; // Voile blanche
+            ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(boatX - 5, boatY - 30, 10, 20);
         }
 
         // Fonction pour dessiner les obstacles
         function drawObstacles() {
+            ctx.fillStyle = '#8B4513';
             obstacles.forEach(obstacle => {
                 if (obstacle.type === 'rock') {
-                    ctx.fillStyle = '#8B4513'; // Roche marron
                     ctx.fillRect(obstacle.x, obstacle.y, 30, 30);
                 } else if (obstacle.type === 'redBuoy') {
-                    ctx.fillStyle = '#FF0000'; // Bouée rouge
+                    ctx.fillStyle = '#FF0000';
                     ctx.fillRect(obstacle.x, obstacle.y, 20, 20);
                 } else if (obstacle.type === 'greenBuoy') {
-                    ctx.fillStyle = '#00FF00'; // Bouée verte
+                    ctx.fillStyle = '#00FF00';
                     ctx.beginPath();
                     ctx.moveTo(obstacle.x, obstacle.y);
                     ctx.lineTo(obstacle.x + 20, obstacle.y);
@@ -160,89 +113,137 @@
 
         // Fonction pour dessiner l'arrière-plan
         function drawBackground() {
-            ctx.fillStyle = '#1a6bb0'; // Bleu pour l'eau
-            ctx.fillRect(0, backgroundY, canvas.width, canvas.height);
-            ctx.fillRect(0, backgroundY - canvas.height, canvas.width, canvas.height);
-
-            // Dessiner des vagues
-            ctx.fillStyle = '#ffffff';
-            for (let i = 0; i < canvas.width; i += 20) {
-                ctx.fillRect(i, backgroundY + 50, 10, 5);
-                ctx.fillRect(i + 10, backgroundY + 60, 10, 5);
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#1e90ff';
+            for (let i = 0; i < canvas.height; i += 20) {
+                ctx.fillRect(0, i, canvas.width, 10);
             }
+        }
+
+        // Fonction pour dessiner le drapeau
+        function drawFlag() {
+            ctx.fillStyle = '#ffd700';
+            ctx.fillRect(canvas.width / 2 - 5, 50, 10, 30);
+            ctx.fillStyle = '#000000';
+            ctx.fillText("po(r)t de départ", canvas.width / 2 - 50, 40);
         }
 
         // Fonction pour mettre à jour le jeu
         function updateGame() {
-            if (!gameRunning) return;
+            if (!gameStarted || gameOver) return;
 
-            // Déplacer l'arrière-plan pour donner l'impression que le bateau avance
-            backgroundY += 2;
-            if (backgroundY >= canvas.height) {
+            backgroundY += gameSpeed;
+            if (backgroundY >= 20) {
                 backgroundY = 0;
             }
 
-            // Déplacer les obstacles vers le bas
-            obstacles.forEach(obstacle => {
-                obstacle.y += 2;
-            });
+            obstacleTimer++;
+            if (obstacleTimer >= 120) {
+                generateObstacle();
+                obstacleTimer = 0;
+            }
 
-            // Vérifier les collisions
-            obstacles.forEach(obstacle => {
-                if (obstacle.y + 30 > boatY && obstacle.y < boatY + 40) {
-                    if (obstacle.type === 'rock' && obstacle.x < boatX + 10 && obstacle.x + 30 > boatX - 10) {
-                        gameOver = true;
-                        gameOverMessage.textContent = 'Tu t\'es échoué ! Tu dois sûrement être un quanti…';
-                        gameOverScreen.style.display = 'flex';
-                    } else if (obstacle.type === 'redBuoy' && obstacle.x < boatX - 10) {
-                        gameOver = true;
-                        gameOverMessage.textContent = 'On doit passer à droite des bouées bâbord rouges ! Marin d\'eau douce !';
-                        gameOverScreen.style.display = 'flex';
-                    } else if (obstacle.type === 'greenBuoy' && obstacle.x + 20 > boatX + 10) {
-                        gameOver = true;
-                        gameOverMessage.textContent = 'On doit passer à gauche des bouées tribord vertes ! Même Fred !';
-                        gameOverScreen.style.display = 'flex';
-                    }
+            obstacles.forEach((obstacle, index) => {
+                obstacle.y += gameSpeed;
+                if (obstacle.y > canvas.height) {
+                    obstacles.splice(index, 1);
+                    score++;
                 }
             });
 
-            // Vérifier si le bateau a atteint le drapeau
-            if (obstacleCount >= 12 && boatY < 50) {
-                gameRunning = false;
-                endScreen.style.display = 'flex';
+            if (score >= 12) {
+                gameOver = true;
+                endScreen.style.display = 'block';
             }
-
-            // Supprimer les obstacles hors de l'écran
-            obstacles = obstacles.filter(obstacle => obstacle.y < canvas.height);
         }
 
-        // Fonction principale du jeu
+        // Fonction pour générer des obstacles
+        function generateObstacle() {
+            const types = ['rock', 'redBuoy', 'greenBuoy'];
+            const type = types[Math.floor(Math.random() * types.length)];
+            let x, y = -30;
+            if (type === 'rock') {
+                x = Math.floor(Math.random() * (canvas.width * 0.5)) + canvas.width * 0.25;
+            } else if (type === 'redBuoy') {
+                x = Math.floor(Math.random() * (canvas.width * 0.25)) + canvas.width * 0.3;
+            } else {
+                x = Math.floor(Math.random() * (canvas.width * 0.25)) + canvas.width * 0.45;
+            }
+            obstacles.push({ x, y, type });
+        }
+
+        // Fonction pour détecter les collisions
+        function checkCollisions() {
+            obstacles.forEach(obstacle => {
+                if (obstacle.type === 'rock' && Math.abs(obstacle.x - boatX) < 20 && Math.abs(obstacle.y - boatY) < 20) {
+                    gameOver = true;
+                    startScreen.innerHTML = '<p>Tu t\'es échoué ! Tu dois sûrement être un quanti…</p><p>ESPACE pour recommencer</p>';
+                    startScreen.style.display = 'block';
+                } else if (obstacle.type === 'redBuoy' && boatX < obstacle.x && boatX > 0) {
+                    gameOver = true;
+                    startScreen.innerHTML = '<p>On doit passer à droite des bouées bâbord rouges ! Marin d\'eau douce !</p><p>ESPACE pour recommencer</p>';
+                    startScreen.style.display = 'block';
+                } else if (obstacle.type === 'greenBuoy' && boatX > obstacle.x && boatX < canvas.width) {
+                    gameOver = true;
+                    startScreen.innerHTML = '<p>On doit passer à gauche des bouées tribord vertes ! Même Fred !</p><p>ESPACE pour recommencer</p>';
+                    startScreen.style.display = 'block';
+                }
+            });
+        }
+
+        // Fonction pour dessiner le jeu
+        function drawGame() {
+            drawBackground();
+            drawObstacles();
+            drawBoat();
+            if (score >= 12) {
+                drawFlag();
+            }
+        }
+
+        // Boucle principale du jeu
         function gameLoop() {
-            if (gameRunning && !gameOver) {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                drawBackground();
-                drawObstacles();
-                drawBoat();
-                updateGame();
-                requestAnimationFrame(gameLoop);
-            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGame();
+            updateGame();
+            checkCollisions();
+            requestAnimationFrame(gameLoop);
         }
 
-        // Écouteurs d'événements pour les touches
+        // Événements du clavier
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space' && !gameRunning) {
-                startGame();
+            if (!gameStarted && (e.code === 'Space')) {
+                gameStarted = true;
+                gameOver = false;
+                startScreen.style.display = 'none';
+                endScreen.style.display = 'none';
+                boatX = canvas.width / 2;
+                boatY = canvas.height - 100;
+                obstacles = [];
+                score = 0;
+                gameStartTime = Date.now();
+                gameMusic.play();
             }
-
-            if (e.code === 'ArrowLeft' && boatX > 20) {
-                boatX -= 10;
-            } else if (e.code === 'ArrowRight' && boatX < canvas.width - 20) {
-                boatX += 10;
+            if (gameStarted && !gameOver) {
+                if (e.code === 'ArrowLeft' && boatX > 0) {
+                    boatX -= 10;
+                } else if (e.code === 'ArrowRight' && boatX < canvas.width) {
+                    boatX += 10;
+                }
             }
         });
 
-        // Démarrer le jeu automatiquement après 8 secondes ou sur appui de la barre d'espace
-        setTimeout(startGame, 8000);
+        // Lancer le jeu
+        setTimeout(() => {
+            if (!gameStarted) {
+                gameStarted = true;
+                startScreen.style.display = 'none';
+                gameMusic.play();
+            }
+        }, 8000);
+
+        gameLoop();
     </script>
 </body>
 </html>
