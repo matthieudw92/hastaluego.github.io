@@ -1,54 +1,54 @@
-# HastaLuego – Mini-Jeu Retro de Voile
+# HastaLuego – Mini jeu navigateur rétro
 
-**HastaLuego** est un mini-jeu d’arcade rétro où vous pilotez un petit voilier à travers des eaux semées d’embûches pour atteindre votre destination. Ce projet a été conçu comme un clin d’œil d’au revoir (*“Hasta Luego”* signifie *“À la prochaine”*) – le jeu contient un message final personnalisé pour une occasion de départ.
+## Présentation
+**HastaLuego** est un mini-jeu web en style pixel art rétro, jouable sur un navigateur desktop. Le joueur y dirige un petit voilier afin de le mener à bon port en évitant les obstacles et en respectant les règles de navigation. Ce projet a été réalisé sans framework, uniquement avec du HTML, CSS et JavaScript pur, dans un but ludique et pédagogique.
 
-## Règles du jeu
+Ce jeu a également une dimension événementielle : il sert de faire-valoir à une invitation pour un pot de départ, d’où le clin d’œil maritime et le message final intégrés au gameplay.
 
-- **Objectif :** Amener votre bateau à bon port sans accident. Il faut naviguer jusqu’au drapeau jaune marqué *“po(r)t de départ”* en haut de l’écran, en évitant ou en contournant tous les obstacles sur le chemin.
-- **Obstacles :** 
-  - Des **rochers bruns** apparaissent au milieu du passage. Si vous heurtez un rocher, votre bateau s’échoue (*“Tu t’es échoué !”*) et la partie est perdue.
-  - Des **bouées rouges (carrées)** apparaissent sur le côté gauche du chenal. Ce sont des balises de **bâbord** – vous devez impérativement les laisser sur votre gauche en les contournant par la droite. Si vous passez du mauvais côté (entre la bouée rouge et le bord gauche de l’écran), vous échouez (*“on doit passer à droite des bouées bâbord rouges !”*).
-  - Des **bouées vertes (triangulaires)** apparaissent sur le côté droit. Ce sont des balises de **tribord** – vous devez les laisser sur votre droite en les contournant par la gauche. Si vous tentez de passer à droite d’une bouée verte (entre la bouée et le bord droit), vous échouez (*“on doit passer à gauche des bouées tribord vertes !”*).
-- **Durée :** Le parcours comporte 12 obstacles et dure environ 30 secondes si vous ne vous échouez pas. Après avoir franchi tous les obstacles, un drapeau jaune apparaît : rejoignez-le pour terminer la partie avec succès.
+## Gameplay et règles du jeu
+Au lancement du jeu, un écran d’introduction affiche les instructions _« à l’aide des touches directionnelles, emmène ton bateau à bon port ! »_ ainsi que l’indication _« ESPACE pour commencer »_. La musique *“Hasta Luego”* de Hugues Aufray démarre automatiquement et joue en boucle en fond sonore.
+
+Une fois la partie lancée (après avoir appuyé sur **Espace** ou automatiquement au bout de 8 secondes), le bateau du joueur apparaît sur une mer pixellisée vue du dessus. Le décor marin défile vers le bas pour simuler l’avancée du bateau vers le haut de l’écran. Le voilier est initialement centré horizontalement et situé au tiers inférieur de l’écran.
+
+**Obstacles :** Au cours de la navigation, 12 obstacles apparaissent progressivement sur le trajet. Il existe trois types d’obstacles qu’il faut négocier de la manière suivante :
+
+- **Rochers (4)** : de gros cailloux marron émergent dans la zone centrale du parcours (environ 25 % à 75 % de la largeur). Si le bateau entre en collision avec un rocher, la partie est perdue ; un message s’affiche (*« Tu t’es échoué ! Tu dois sûrement être un quanti… »*) et le jeu redémarre depuis le début.
+- **Bouées rouges carrées (4)** : elles délimitent le côté bâbord (gauche) du chenal et apparaissent plutôt sur la partie gauche du plan d’eau (env. 30 % à 55 % de la largeur). Le joueur doit passer **à droite** de ces bouées (c’est-à-dire garder la bouée rouge sur la gauche du bateau). Si le bateau passe du **mauvais côté** d’une bouée rouge (à sa gauche, entre la bouée et le bord gauche de l’écran), un message d’échec s’affiche (*« On doit passer à droite des bouées bâbord rouges ! Marin d’eau douce ! »*) et le jeu redémarre.
+- **Bouées vertes triangulaires (4)** : elles marquent le côté tribord (droit) du chenal et sont placées plutôt sur la partie droite (env. 45 % à 70 % de la largeur). Il faut passer **à gauche** de ces bouées vertes (les garder sur la droite du bateau). Si le bateau passe du mauvais côté d’une bouée verte (à sa droite, c’est-à-dire entre la bouée et le bord droit de l’écran), un message d’échec apparaît (*« On doit passer à gauche des bouées tribord vertes ! Même Fred ! »*) et la partie redémarre.
+
+Après avoir surmonté les 12 obstacles, le bateau pourra avancer librement jusqu’à apercevoir un **drapeau d’arrivée** jaune arborant le texte *« po(r)t de départ »*. C’est le port qu’il fallait atteindre ! Lorsque le voilier atteint ce drapeau final, c’est la **victoire** : le jeu affiche un écran de félicitations. Le message final invite les joueurs au pot de départ (dans le contexte réel du projet) en affichant :
+
+> *« Bien joué !  
+> Après 7 ans dans le même bateau, je vais changer d’équipage et quitter Harris pour une autre aventure.  
+> Tu as prouvé ta valeur aujourd’hui ; je t’invite à rejoindre de la même façon mon pot de départ le **jeudi 6 novembre**, à la cafèt, avant de se déhaler vers une autre destination plus festive ! »*
+
+*Remarque :* le texte **jeudi 6 novembre** est mis en évidence dans ce message final afin de marquer la date de l’événement.
+
+En cas de victoire, la musique s’arrête et le jeu reste sur l’écran final jusqu’à ce que l’utilisateur le ferme ou le redémarre manuellement (par exemple en rechargeant la page). En cas d’échec à cause d’un obstacle, le jeu redémarre automatiquement après quelques secondes en ré-affichant l’écran d’introduction (il est possible d’appuyer sur Espace immédiatement pour relancer plus vite la partie).
 
 ## Contrôles
+- **Flèche gauche / droite** : Déplacer le bateau latéralement vers la gauche ou la droite.
+- **Flèche haut** : Faire avancer/accélérer le bateau vers l’avant.
+- **Barre d’espace** : Lancer la partie (depuis l’écran d’intro). Après un échec, permet également de recommencer immédiatement (sans attendre le démarrage automatique).
 
-- **Flèche gauche (←)** : Diriger le bateau vers la gauche.  
-- **Flèche droite (→)** : Diriger le bateau vers la droite.  
-- **Flèche haut (↑)** : Accélérer vers l’avant (utile uniquement à la fin pour atteindre le drapeau).  
-- *(La flèche bas (↓) n’est pas utilisée dans ce jeu.)*  
-- **Espace** : 
-  - Depuis l’écran d’introduction, appuyer sur *Espace* lance la partie. 
-  - Après un échec, appuyer sur *Espace* permet de redémarrer immédiatement (sinon le jeu redémarre automatiquement après quelques secondes).  
+**Remarque :** Le jeu est conçu pour un contrôle au clavier sur ordinateur. Il n’est pas optimisé pour les écrans tactiles ou l’utilisation sur mobile.
 
-*Astuce :* Vous pouvez aussi simplement attendre ~8 secondes sur l’écran d’intro pour que la partie démarre automatiquement (avec la musique).
+## Installation et lancement
+1. Assurez-vous d’avoir un navigateur web moderne sur un ordinateur de bureau (Chrome, Firefox, Edge, etc.).
+2. Placez le fichier audio **`assets_Hugues Aufray - Hasta Luego.mp3`** dans le même répertoire que le fichier `index.html` du jeu (ou adaptez le chemin dans le code HTML si nécessaire). Ce fichier contient la musique de fond.
+3. Ouvrez le fichier `index.html` dans votre navigateur. L’écran d’introduction du jeu devrait apparaître, avec la musique jouant en arrière-plan.
+4. Appuyez sur **Espace** pour commencer la partie (ou patientez 8 secondes pour un démarrage automatique).
 
-## Style et Graphismes
+Si le jeu est ouvert depuis un fichier local, il est possible que le navigateur bloque la lecture automatique de la musique pour des raisons de sécurité. Dans ce cas, appuyez sur **Espace** ou interagissez avec la page pour déclencher la lecture audio. Veillez également à ce que le volume de votre ordinateur soit adéquat pour profiter de la chanson.
 
-- Le jeu adopte un style **pixel art rétro**. Tous les textes sont affichés dans une police pixelisée (type arcade des années 80). Les éléments du jeu (bateau, rochers, bouées, drapeau) sont représentés par des formes simples et colorées pour rappeler le pixel art. 
-- **Bateau :** petit triangle blanc (la voile) avec une base brune (la coque).  
-- **Rochers :** disques bruns.  
-- **Bouées rouges :** carrés rouges.  
-- **Bouées vertes :** triangles verts.  
-- **Drapeau d’arrivée :** texte jaune *“po(r)t de départ”* affiché avec une petite icône de drapeau.  
+## Réalisation technique
+- **Technologies utilisées :** HTML5, CSS3 et JavaScript. Le jeu utilise un canevas `<canvas>` HTML5 pour le rendu des graphismes et des animations. Aucune librairie ni moteur tiers n’est requis, tout est codé “from scratch”.
+- **Graphismes pixel-art :** Les éléments visuels (bateau, vagues, rochers, bouées, drapeau) sont dessinés directement via le canvas en utilisant des formes simples (rectangles, triangles) pour reproduire une esthétique rétro pixelisée. Par exemple, le voilier est composé d’un rectangle pour la coque et d’un triangle pour la voile ; les rochers sont des blocs marron avec quelques pixels plus clairs pour simuler la texture, etc. Le fond marin est animé avec un motif de vagues simplifié (bandes de pixels plus clairs se déplaçant pour simuler le mouvement de l’eau).
+- **Musique :** La musique de fond est intégrée à l’aide d’un élément `<audio>` HTML en boucle. Elle se lance au début de la partie (juste après l’écran d’intro). Aucun autre effet sonore n’est inclus, afin de rester focalisé sur la musique et l’aspect rétro.
+- **Structure du code :** Tout le code HTML, CSS et JS est regroupé dans le fichier `index.html` pour faciliter la portabilité. Des commentaires en français sont présents dans le code source pour expliquer les différentes sections (initialisation, boucle de jeu, dessin des éléments, gestion des collisions, etc.). Le JavaScript est organisé en plusieurs fonctions (par exemple `initGame()`, `gameLoop()`, `drawBoat()`, etc.) pour clarifier les étapes du fonctionnement du jeu. Une variable d’état gère la progression (écran d’intro, partie en cours, victoire/échec).
+- **Accessibilité :** Le jeu étant une expérience ludique visuelle et sonore, il n’est pleinement accessible qu’aux utilisateurs pouvant voir les graphismes et entendre la musique. Il n’y a pas de mode alternatif texte ou son. La navigation se fait au clavier, et le jeu est prévu pour un écran d’ordinateur (pas d’adaptation mobile).
 
-*Remarque :* Ces graphismes sont des **sprites provisoires**. Vous pouvez les remplacer par de véritables images pixel art pour plus d’esthétique. Par exemple, utiliser une image PNG pour le bateau et les obstacles. Veillez alors à ajuster les dimensions dans le code si nécessaire pour correspondre à la taille des sprites.
-
-## Musique
-
-La chanson **“Hasta Luego” d’Hugues Aufray** accompagne le jeu et joue en boucle pendant la partie. Pour des raisons de copyright, le fichier audio n’est pas inclus dans ce dépôt. Vous pouvez ajouter le fichier MP3 dans le dossier du projet (et mettre à jour le chemin dans le code HTML `<audio src="...">`). La musique démarre lorsque le jeu commence (après une interaction de l’utilisateur, conformément aux politiques des navigateurs).
-
-## Lancer le jeu
-
-Aucun prérequis particulier n’est nécessaire. Il suffit d’ouvrir le fichier `index.html` dans un navigateur web moderne :
-
-- Téléchargez les fichiers du projet (**index.html** et ce **README.md**, ainsi que les assets que vous ajouterez).
-- Ajoutez les fichiers de **sprites** (images PNG/GIF pour le bateau, les rochers, les bouées, etc.) et le fichier de **musique** dans un sous-dossier (par exemple `assets/` ou `music/`) et ajustez les chemins dans `index.html` si besoin. Par exemple, mettez votre `HastaLuego.mp3` dans un dossier `music/` et vérifiez que la balise `<audio>` pointe vers `music/HastaLuego.mp3`.
-- Ouvrez `index.html` avec votre navigateur (double-cliquez le fichier, ou lancez un petit serveur local et accédez-y). Assurez-vous que le navigateur autorise le son – il faudra cliquer sur la page ou appuyer sur Espace pour que la musique démarre.
-- Vous verrez l’écran d’accueil *Hasta Luego* avec les instructions. Appuyez sur **Espace** pour commencer à jouer.
-
-Le jeu peut également être hébergé sur **GitHub Pages** ou un autre hébergeur statique. Il vous suffit de publier le contenu du projet (y compris les assets ajoutés) et d’accéder à la page `index.html` via l’URL GitHub Pages. Le jeu étant en JavaScript pur côté client, il fonctionnera tant que tous les fichiers (HTML, CSS, JS, images, audio) sont correctement servis.
-
-## À propos du projet
-
-Ce mini-jeu a été créé pour une occasion spéciale de départ, d’où son nom *HastaLuego*. N’hésitez pas à forker le projet et à le modifier pour vos propres événements ou juste pour le plaisir d’améliorer le gameplay et les graphismes. Amusez-vous bien, et bon vent au capitaine qui quitte le navire ! ⛵
+## Crédits
+- **Musique :** *“Hasta Luego”* – Hugues Aufray (1966). Merci à cette chanson iconique de donner son ambiance marine au jeu.
+- **Police de caractères :** *“Press Start 2P”* par CodeMan38 (disponible via Google Fonts), qui offre le style pixel art rétro pour les textes à l’écran.
+- **Idée et réalisation :** Ce mini-jeu a été conçu dans un contexte professionnel (pot de départ) pour une touche d’originalité. Code et graphismes par **[Votre Nom]**, en hommage aux jeux d’arcade des années 80 et aux aventures maritimes.
