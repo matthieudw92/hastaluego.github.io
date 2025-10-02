@@ -1,6 +1,6 @@
 # HastaLuego
 
-Mini-jeu 2D rétro/pixel : **emmène ton bateau à bon port** ⛵  
+**emmène ton bateau à bon port** ⛵  
 **Espace** pour démarrer (auto-start au bout de 8s), **flèches** pour diriger.
 
 👉 **Jouer en ligne** : https://<ton-username>.github.io/HastaLuego/  
