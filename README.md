@@ -1,105 +1,111 @@
 # HastaLuego 🚢
 
-Un mini-jeu de navigation maritime en pixel art pour célébrer un départ après 7 ans d'aventure chez Harris !
+Un jeu de navigation maritime rétro en pixel art pour dire au revoir à l'équipage d'Harris après 7 ans d'aventures !
 
-## 🎮 Description du jeu
+![HastaLuego Game](https://img.shields.io/badge/status-ready%20to%20sail-blue)
 
-**HastaLuego** est un jeu de navigation où vous devez guider un petit voilier à travers les obstacles maritimes pour rejoindre le port de départ. Inspiré par l'esprit marin et la chanson d'Hugues Aufray, ce jeu est une invitation ludique à un pot de départ.
+## 🎮 Description
+
+**HastaLuego** est un mini-jeu de navigation où vous devez guider votre voilier à travers une série d'obstacles maritimes pour atteindre le port de départ. Évitez les rochers et respectez les règles de navigation des bouées pour réussir votre traversée !
+
+## 🎯 Objectif
+
+Naviguer à travers 12 obstacles sans collision pour atteindre le drapeau du port de départ et découvrir une invitation spéciale.
 
 ## 🕹️ Comment jouer
 
 ### Contrôles
-- **Touches directionnelles** : Déplacer le bateau (gauche/droite/haut/bas)
-- **Barre ESPACE** : Lancer le jeu
-
-### Objectif
-Naviguer à travers 12 obstacles pour atteindre le port de départ en évitant :
-- **Rochers** (marrons) : À éviter complètement
-- **Bouées rouges** (carrées) : Passer à droite (règles de navigation bâbord)
-- **Bouées vertes** (triangulaires) : Passer à gauche (règles de navigation tribord)
+- **Flèches directionnelles** : Déplacer le bateau (↑ ↓ ← →)
+- **ESPACE** : Lancer le jeu / Réessayer après un échec
 
 ### Règles de navigation
-- Les bouées rouges (bâbord) doivent être laissées à gauche - passez à droite !
-- Les bouées vertes (tribord) doivent être laissées à droite - passez à gauche !
-- Les rochers doivent être évités complètement
-- Après 12 obstacles, rejoignez le drapeau jaune "PO(R)T DE DÉPART"
-
-## 🚀 Installation
-
-1. Clonez ce repository :
-```bash
-git clone https://github.com/[votre-username]/HastaLuego.git
-```
-
-2. Ajoutez le fichier audio `hasta-luego.mp3` (la chanson "Hasta Luego" d'Hugues Aufray) à la racine du projet
-
-3. Ouvrez `index.html` dans votre navigateur
-
-## 📁 Structure du projet
-
-```
-HastaLuego/
-│
-├── index.html          # Fichier principal du jeu
-├── README.md          # Documentation
-└── hasta-luego.mp3    # Musique de fond (à ajouter)
-```
-
-## 🎨 Caractéristiques
-
-- **Style pixel art** rétro gaming
-- **Musique d'ambiance** : "Hasta Luego" d'Hugues Aufray en boucle
-- **Physique maritime** simplifiée
-- **Messages d'erreur** humoristiques en cas de collision
-- **Animation des vagues** pour un effet mer dynamique
-- **Système de progression** avec compteur d'obstacles
-
-## 🛠️ Technologies utilisées
-
-- HTML5 Canvas pour le rendu
-- JavaScript vanilla pour la logique du jeu
-- CSS3 pour le style des bannières
-- Police "Press Start 2P" pour l'ambiance rétro
-
-## 📝 Notes de développement
+1. **Rochers 🪨** : Évitez-les en passant à droite ou à gauche
+2. **Bouées rouges carrées** : Passez toujours à **droite** (règle bâbord)
+3. **Bouées vertes triangulaires** : Passez toujours à **gauche** (règle tribord)
 
 ### Collisions
-- Les rochers ont une zone de collision directe
-- Les bouées ont une zone de passage obligatoire selon leur couleur
-- La détection se fait en temps réel à chaque frame
+- Collision avec un rocher → "Tu t'es échoué ! Tu dois sûrement être un quanti…"
+- Passage incorrect d'une bouée rouge → "On doit passer à droite des bouées bâbord rouges ! Marin d'eau douce !"
+- Passage incorrect d'une bouée verte → "On doit passer à gauche des bouées tribord vertes ! Même Fred !"
 
-### Performance
-- Animation à 60 FPS via requestAnimationFrame
-- Rendu optimisé avec canvas 2D
-- Nombre d'obstacles limité à l'écran pour maintenir la fluidité
+## 📁 Installation
 
-## 🎯 Améliorations futures possibles
+### Méthode 1 : Clone du repository
+```bash
+git clone https://github.com/votre-username/HastaLuego.git
+cd HastaLuego
+```
 
-- [ ] Ajout d'effets sonores (collision, victoire)
-- [ ] Système de score basé sur le temps
-- [ ] Niveaux de difficulté
-- [ ] Effets visuels supplémentaires (éclaboussures, traînée)
-- [ ] Mode multijoueur local
-- [ ] Sauvegarde des meilleurs scores
+### Méthode 2 : Téléchargement direct
+1. Téléchargez le fichier `index.html`
+2. Téléchargez le fichier audio `hasta_luego.mp3` (musique "Hasta Luego" de Hugues Aufray)
+3. Placez les deux fichiers dans le même dossier
 
-## 🎉 Message spécial
+## 🎵 Configuration audio
 
-Ce jeu a été créé pour célébrer un départ après 7 ans chez Harris. Il constitue une invitation originale et ludique au pot de départ du **jeudi 6 novembre** à la cafétéria.
+**Important** : Le jeu nécessite un fichier audio pour fonctionner correctement.
 
-*"Après 7 ans dans le même bateau, il est temps de changer d'équipage et de naviguer vers de nouvelles aventures !"*
+1. Téléchargez ou obtenez la chanson "Hasta Luego" de Hugues Aufray
+2. Convertissez-la en format MP3 si nécessaire
+3. Renommez le fichier en `hasta_luego.mp3`
+4. Placez-le dans le même dossier que `index.html`
+
+Si vous n'avez pas le fichier audio, le jeu fonctionnera quand même, mais sans musique.
+
+## 🚀 Lancement
+
+Ouvrez simplement le fichier `index.html` dans votre navigateur web préféré :
+- Double-cliquez sur le fichier
+- Ou faites un clic droit → "Ouvrir avec" → Votre navigateur
+
+**Navigateurs recommandés** : Chrome, Firefox, Edge, Safari
+
+## 🎨 Style visuel
+
+Le jeu adopte une esthétique **pixel art rétrogaming** avec :
+- Une palette de couleurs marines et chaudes
+- Des sprites pixelisés pour un effet nostalgique
+- Un rendu crisp-edges pour préserver l'aspect rétro
+- Des animations fluides malgré le style pixel art
+
+## 🎪 Événement spécial
+
+En terminant le jeu, vous découvrirez les détails d'un pot de départ :
+- **Date** : Jeudi 6 novembre
+- **Lieu** : À la cafèt
+- **Suite** : Destination plus festive à suivre !
+
+## 💻 Technologies utilisées
+
+- HTML5 Canvas
+- JavaScript Vanilla
+- CSS3
+- Web Audio API
+
+## 📝 Notes techniques
+
+- Résolution du canvas : 800x600 pixels
+- 60 FPS
+- 12 obstacles à éviter
+- Durée approximative : 30-40 secondes par partie
+- Auto-démarrage après 8 secondes sur l'écran d'accueil
+
+## 🤝 Contribution
+
+Ce jeu est un projet personnel pour un événement spécifique. Si vous souhaitez créer votre propre version, n'hésitez pas à forker le projet !
 
 ## 📜 Licence
 
-Ce projet est créé dans un but festif et amical. Libre d'utilisation et de modification pour des événements similaires !
+Ce projet est à usage personnel et événementiel.
 
-## 🤝 Remerciements
+## 👏 Remerciements
 
-- Hugues Aufray pour la musique inspirante
-- L'équipe Harris pour ces 7 années de navigation commune
-- Tous les marins d'eau douce qui tenteront l'aventure !
+- Hugues Aufray pour la chanson "Hasta Luego"
+- L'équipe Harris pour 7 années incroyables
+- Tous les marins d'eau douce qui tenteront leur chance !
 
 ---
 
-**Bon vent et bonne navigation !** ⛵
+**Bon vent et bonne navigation ! ⛵**
 
-*PS : Les vrais marins savent qu'on ne dit jamais "corde" sur un bateau... c'est un bout !*
+*"Hasta luego, hasta luego, je reviendrai..."*
