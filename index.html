@@ -1,499 +1,256 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HastaLuego - Mini Jeu Nautique</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            overflow: hidden;
-            font-family: 'Press Start 2P', monospace;
-            background: #1a1a2e;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-        
-        #gameCanvas {
-            border: 4px solid #0f0f23;
-            image-rendering: pixelated;
-            image-rendering: -moz-crisp-edges;
-            image-rendering: crisp-edges;
-        }
-        
-        .panel {
-            position: absolute;
-            background: rgba(15, 15, 35, 0.95);
-            border: 4px solid #ffd700;
-            color: #ffffff;
-            padding: 30px;
-            text-align: center;
-            font-size: 14px;
-            line-height: 1.8;
-            max-width: 600px;
-            z-index: 100;
-            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-        }
-        
-        .panel h2 {
-            color: #ffd700;
-            margin-bottom: 20px;
-            font-size: 18px;
-        }
-        
-        .highlight {
-            color: #ff6b6b;
-            font-size: 16px;
-            text-shadow: 2px 2px 0px #000;
-            animation: pulse 1s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .space-hint {
-            margin-top: 20px;
-            color: #4ecdc4;
-            animation: blink 1s infinite;
-        }
-        
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>HastaLuego - Mini-Jeu</title>
+  <style>
+    /* --- Styles généraux --- */
+    html, body { margin: 0; padding: 0; height: 100%; overflow: hidden; background: #4A90E2; }
+    body { 
+      /* On pourrait définir ici un motif pixelisé pour l'eau en background */
+      background-image: 
+        linear-gradient(90deg, #4A90E2 50%, #5CB3FF 50%),   /* vertical stripes pattern */
+        linear-gradient(#4A90E2 50%, #5CB3FF 50%);
+      background-size: 8px 8px; /* damier 8x8 */
+      animation: scrollBg 5s linear infinite;
+    }
+    @keyframes scrollBg {
+      0% { background-position-y: 0; }
+      100% { background-position-y: 8px; } /* fait défiler le pattern de 8px */
+    }
+
+    /* --- Conteneur du jeu --- */
+    #game {
+      position: relative;
+      width: 100%; height: 100%;
+      /* Pas de background ici si on utilise celui du body */
+      overflow: hidden;
+    }
+
+    /* --- Bateau --- */
+    #boat {
+      position: absolute;
+      width: 32px; height: 32px;
+      bottom: 33%; left: 50%; /* placé au tiers inférieur initialement */
+      transform: translateX(-50%);
+      /* Représentation simplifiée du bateau */
+      background: brown; /* coque marron carrée (simplification) */
+    }
+    /* Voile du bateau en pseudo-élément */
+    #boat::after {
+      content: '';
+      position: absolute;
+      top: -20px; left: 8px; /* au-dessus de la coque, décalé à l'avant */
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 20px solid white; /* triangle blanc pour la voile */
+    }
+
+    /* --- Obstacles --- */
+    .obstacle { position: absolute; width: 24px; height: 24px; }
+    .rock {
+      background: sienna; 
+      /* on pourrait ajouter des petits carrés plus foncés pour l'irrégularité */
+    }
+    .buoy-red {
+      background: #F00;
+      /* effet 3D par ombres de bord */
+      border-right: 4px solid #900; border-bottom: 4px solid #900;
+    }
+    .buoy-green {
+      /* triangle vert: on utilise le pseudo-élément car un triangle n’a pas de largeur/hauteur propres */
+      background: transparent;
+    }
+    .buoy-green::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      border-left: 12px solid transparent;
+      border-right: 12px solid transparent;
+      border-bottom: 24px solid limegreen;
+      /* ombre sur la moitié droite du triangle */
+      /* Par exemple, un pseudo élément suppl. ou box-shadow simulant l'ombre */
+    }
+
+    /* --- Drapeau d'arrivée --- */
+    #finish-flag {
+      position: absolute;
+      top: -50px; /* hors écran initialement */
+      right: 10%;
+      width: 0; height: 0; /* on va le dessiner via border */
+      border-left: 40px solid yellow;   /* le pavillon triangulaire */
+      border-top: 20px solid transparent;
+      border-bottom: 20px solid transparent;
+    }
+    #finish-flag::after { /* hampe du drapeau */
+      content: '';
+      position: absolute;
+      left: -4px; top: -2px;
+      width: 4px; height: 44px;
+      background: gray;
+    }
+    #finish-flag span {
+      position: absolute;
+      left: -120px; top: -5px;
+      width: 100px;
+      color: black; font-weight: bold; font-size: 12px;
+      text-align: right;
+    }
+
+    /* --- Écran de démarrage --- */
+    #start-screen, #end-screen {
+      position: absolute; top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,50,0.8); /* voile foncé translucide */
+      color: #FFF;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 20px;
+    }
+    #start-screen h1 { font-size: 1.5em; }
+    #start-screen p { font-size: 1.2em; }
+    #end-screen { display: none; }
+    .highlight { color: yellow; font-weight: bold; }
+  </style>
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        
-        // Configuration du canvas
-        canvas.width = 800;
-        canvas.height = 600;
-        ctx.imageSmoothingEnabled = false;
-        
-        // État du jeu
-        const game = {
-            state: 'start',
-            autoStartTimer: 0,
-            boatX: canvas.width / 2,
-            boatY: canvas.height * 0.7,
-            boatSpeed: 4,
-            scrollSpeed: 3,
-            scrollOffset: 0,
-            obstacles: [],
-            obstacleCount: 0,
-            totalObstacles: 12,
-            obstacleSpawnTimer: 0,
-            obstacleSpawnInterval: 120,
-            finalPhase: false,
-            finalBoatY: canvas.height * 0.7,
-            flagY: -100,
-            collisionCooldown: 0
-        };
-        
-        // Contrôles
-        const keys = {};
-        
-        // Couleurs pixel art
-        const colors = {
-            sea: ['#1e3a8a', '#1e40af', '#2563eb'],
-            boat: '#8b4513',
-            sail: '#f5f5dc',
-            rock: '#654321',
-            redBuoy: '#dc2626',
-            greenBuoy: '#16a34a',
-            flag: '#ffd700',
-            foam: '#ffffff'
-        };
-        
-        // Audio (placeholder - sera remplacé par la vraie musique)
-        let music;
-        function initAudio() {
-            // Essayer de charger la musique depuis GitHub
-            music = new Audio('hasta-luego.mp3');
-            music.loop = true;
-            music.volume = 0.5;
-            music.play().catch(() => {
-                console.log('Musique non disponible');
-            });
+  <div id="game">
+    <div id="boat"></div>
+    <!-- Obstacles will be dynamically added here -->
+    <div id="finish-flag"><span>po(r)t de départ</span></div>
+
+    <div id="start-screen">
+      <h1>À l’aide des touches directionnelles,<br/>emmène ton bateau à bon port !</h1>
+      <p>ESPACE pour commencer</p>
+    </div>
+    <div id="end-screen"></div>
+  </div>
+  <audio id="bgm" src="hasta_luego.mp3" loop></audio>
+
+  <script>
+    let gameStarted = false, gameOver = false;
+    const boat = document.getElementById('boat');
+    const startScreen = document.getElementById('start-screen');
+    const endScreen = document.getElementById('end-screen');
+    const bgm = document.getElementById('bgm');
+
+    // Obstacle parameters
+    const obstacleData = [
+      {type: 'rock', x: 60}, {type: 'buoy-red', x: 30},
+      /* ... etc ... total 12 entries ... */
+    ];
+    let obstacles = []; // will hold DOM elements and their state (y position, etc.)
+    let passedCount = 0;
+
+    function startGame() {
+      if (gameStarted) return;
+      gameStarted = true;
+      startScreen.style.display = 'none';
+      // Play music (allowed because this is triggered by user interaction)
+      bgm.play();
+      // Initialize boat position
+      boat.style.left = '50%';
+      // Create obstacles elements
+      obstacleData.forEach((obs, index) => {
+        const div = document.createElement('div');
+        div.classList.add('obstacle', obs.type);
+        // set initial position above the screen
+        div.style.top = (-100 * index) + 'px';
+        div.style.left = obs.x + '%';
+        document.getElementById('game').appendChild(div);
+        obstacles.push({element: div, type: obs.type});
+      });
+      // Start the game loop
+      requestAnimationFrame(gameLoop);
+    }
+
+    function endGame(success, message) {
+      gameOver = true;
+      // Show end screen with message
+      endScreen.style.display = 'flex';
+      endScreen.innerHTML = success ? 
+        "<h1>Bien joué !</h1><p>" + message + "</p>" :
+        "<h1>Game Over</h1><p>" + message + "</p>";
+      // Optionally stop music or play a different tune
+      // bgm.pause();
+    }
+
+    function gameLoop() {
+      if (gameOver) return;
+      // Move obstacles
+      obstacles.forEach(obs => {
+        const el = obs.element;
+        let currentY = parseInt(el.style.top) || 0;
+        currentY += 2; // move 2px down
+        el.style.top = currentY + 'px';
+        // Remove or count passed obstacles
+        if (currentY > window.innerHeight) {
+          passedCount++;
+          // remove from DOM and array
+          el.remove();
         }
-        
-        // Dessiner la mer avec effet de vagues
-        function drawSea() {
-            const waveHeight = 20;
-            const waveFreq = 0.05;
-            
-            for (let y = 0; y < canvas.height; y += 4) {
-                const colorIndex = Math.floor((y + game.scrollOffset) / 40) % colors.sea.length;
-                ctx.fillStyle = colors.sea[colorIndex];
-                
-                for (let x = 0; x < canvas.width; x += 4) {
-                    const waveOffset = Math.sin((x * waveFreq) + (game.scrollOffset * 0.01)) * waveHeight;
-                    if (y + waveOffset < canvas.height) {
-                        ctx.fillRect(x, y + waveOffset, 4, 4);
-                    }
-                }
+      });
+      // Check collisions or side-pass errors
+      const boatRect = boat.getBoundingClientRect();
+      obstacles.forEach(obs => {
+        const rect = obs.element.getBoundingClientRect();
+        // If overlap with boat (physical collision)
+        if (
+          boatRect.left < rect.left + rect.width &&
+          boatRect.left + boatRect.width > rect.left &&
+          boatRect.top < rect.top + rect.height &&
+          boatRect.top + boatRect.height > rect.top
+        ) {
+          // Determine message based on type
+          let msg = "";
+          if (obs.type === 'rock') msg = "Tu t’es échoué ! Tu dois sûrement être un quanti…";
+          else if (obs.type === 'buoy-red') msg = "On doit passer à droite des bouées bâbord rouges ! Marin d’eau douce !";
+          else if (obs.type === 'buoy-green') msg = "On doit passer à gauche des bouées tribord vertes ! Même Fred !";
+          endGame(false, msg);
+        }
+        // If boat and obstacle roughly at same vertical level, check side for buoys
+        if ((rect.top < boatRect.bottom && rect.bottom > boatRect.top)) {
+          if (obs.type === 'buoy-red') {
+            const boatCenterX = boatRect.left + boatRect.width/2;
+            const buoyCenterX = rect.left + rect.width/2;
+            if (boatCenterX < buoyCenterX) {
+              endGame(false, "On doit passer à droite des bouées bâbord rouges ! Marin d’eau douce !");
             }
-        }
-        
-        // Dessiner le bateau en pixel art
-        function drawBoat(x, y) {
-            // Coque
-            ctx.fillStyle = colors.boat;
-            ctx.fillRect(x - 20, y, 40, 16);
-            ctx.fillRect(x - 16, y + 16, 32, 8);
-            ctx.fillRect(x - 12, y + 24, 24, 4);
-            
-            // Mât
-            ctx.fillStyle = '#4a4a4a';
-            ctx.fillRect(x - 2, y - 40, 4, 40);
-            
-            // Voile
-            ctx.fillStyle = colors.sail;
-            ctx.beginPath();
-            ctx.moveTo(x + 2, y - 35);
-            ctx.lineTo(x + 20, y - 20);
-            ctx.lineTo(x + 2, y - 5);
-            ctx.closePath();
-            ctx.fill();
-            
-            // Détails
-            ctx.fillStyle = '#8b4513';
-            ctx.fillRect(x + 4, y - 30, 12, 2);
-            ctx.fillRect(x + 4, y - 20, 12, 2);
-            ctx.fillRect(x + 4, y - 10, 12, 2);
-        }
-        
-        // Dessiner un rocher
-        function drawRock(x, y) {
-            ctx.fillStyle = colors.rock;
-            // Forme irrégulière de rocher
-            ctx.fillRect(x - 16, y - 8, 32, 16);
-            ctx.fillRect(x - 20, y - 4, 40, 8);
-            ctx.fillRect(x - 12, y - 12, 24, 4);
-            ctx.fillRect(x - 8, y + 4, 16, 4);
-            
-            // Ombrage
-            ctx.fillStyle = '#4a3020';
-            ctx.fillRect(x + 8, y - 4, 8, 8);
-            ctx.fillRect(x - 4, y + 4, 8, 4);
-        }
-        
-        // Dessiner une bouée rouge (carrée)
-        function drawRedBuoy(x, y) {
-            ctx.fillStyle = colors.redBuoy;
-            ctx.fillRect(x - 12, y - 12, 24, 24);
-            
-            // Bande réfléchissante
-            ctx.fillStyle = '#ff6b6b';
-            ctx.fillRect(x - 8, y - 8, 16, 4);
-            
-            // Ombre
-            ctx.fillStyle = '#991b1b';
-            ctx.fillRect(x + 4, y + 4, 8, 8);
-        }
-        
-        // Dessiner une bouée verte (triangulaire)
-        function drawGreenBuoy(x, y) {
-            ctx.fillStyle = colors.greenBuoy;
-            // Triangle pixelisé
-            for (let i = 0; i < 6; i++) {
-                ctx.fillRect(x - 12 + i * 2, y - 12 + i * 4, 24 - i * 4, 4);
+          }
+          if (obs.type === 'buoy-green') {
+            const boatCenterX = boatRect.left + boatRect.width/2;
+            const buoyCenterX = rect.left + rect.width/2;
+            if (boatCenterX > buoyCenterX) {
+              endGame(false, "On doit passer à gauche des bouées tribord vertes ! Même Fred !");
             }
-            
-            // Bande réfléchissante
-            ctx.fillStyle = '#4ade80';
-            ctx.fillRect(x - 8, y - 8, 16, 4);
+          }
         }
-        
-        // Dessiner le drapeau d'arrivée
-        function drawFlag(x, y) {
-            // Mât
-            ctx.fillStyle = '#4a4a4a';
-            ctx.fillRect(x - 2, y, 4, 40);
-            
-            // Drapeau
-            ctx.fillStyle = colors.flag;
-            ctx.fillRect(x + 2, y, 30, 20);
-            
-            // Effet ondulé
-            ctx.fillRect(x + 32, y + 4, 4, 12);
-            
-            // Texte au-dessus
-            ctx.fillStyle = '#ffffff';
-            ctx.font = '10px "Press Start 2P"';
-            ctx.fillText('po(r)t de', x - 40, y - 20);
-            ctx.fillText('départ', x - 30, y - 8);
+      });
+      // Check win condition
+      if (!gameOver && passedCount >= obstacleData.length) {
+        // Trigger finish flag and victory
+        document.getElementById('finish-flag').style.top = '10px';
+        endGame(true, "Après 7 ans dans le même bateau, ... <br/>\
+          Rejoins mon <span class='highlight'>pot de départ</span> le jeudi 6 novembre !");
+      }
+      if (!gameOver) requestAnimationFrame(gameLoop);
+    }
+
+    // Keyboard controls
+    document.addEventListener('keydown', e => {
+      if (!gameStarted) {
+        if (e.code === 'Space') startGame();
+      } else {
+        const step = 10;
+        if (e.code === 'ArrowLeft') {
+          boat.style.left = (boat.offsetLeft - step) + 'px';
+        } else if (e.code === 'ArrowRight') {
+          boat.style.left = (boat.offsetLeft + step) + 'px';
         }
-        
-        // Créer un obstacle
-        function createObstacle() {
-            if (game.obstacleCount >= game.totalObstacles) return;
-            
-            const types = ['rock', 'redBuoy', 'greenBuoy'];
-            const type = types[Math.floor(Math.random() * types.length)];
-            
-            let x;
-            if (type === 'rock') {
-                x = canvas.width * (0.25 + Math.random() * 0.5);
-            } else if (type === 'redBuoy') {
-                x = canvas.width * (0.3 + Math.random() * 0.25);
-            } else {
-                x = canvas.width * (0.45 + Math.random() * 0.25);
-            }
-            
-            game.obstacles.push({
-                type: type,
-                x: x,
-                y: -50
-            });
-            
-            game.obstacleCount++;
-        }
-        
-        // Vérifier les collisions
-        function checkCollision() {
-            if (game.collisionCooldown > 0) return;
-            
-            for (let obstacle of game.obstacles) {
-                const dx = Math.abs(game.boatX - obstacle.x);
-                const dy = Math.abs(game.boatY - obstacle.y);
-                
-                if (obstacle.type === 'rock' && dx < 30 && dy < 25) {
-                    showCollisionMessage("Tu t'es échoué ! Tu dois sûrement être un quanti...");
-                    resetGame();
-                    return;
-                }
-                
-                if (obstacle.type === 'redBuoy') {
-                    if (game.boatX < obstacle.x && dx < 40 && dy < 25) {
-                        showCollisionMessage("On doit passer à droite des bouées bâbord rouges ! Marin d'eau douce !");
-                        resetGame();
-                        return;
-                    }
-                }
-                
-                if (obstacle.type === 'greenBuoy') {
-                    if (game.boatX > obstacle.x && dx < 40 && dy < 25) {
-                        showCollisionMessage("On doit passer à gauche des bouées tribord vertes ! Même Fred !");
-                        resetGame();
-                        return;
-                    }
-                }
-            }
-        }
-        
-        // Afficher un message de collision
-        function showCollisionMessage(message) {
-            const panel = document.createElement('div');
-            panel.className = 'panel';
-            panel.innerHTML = `<p>${message}</p>`;
-            document.body.appendChild(panel);
-            
-            game.collisionCooldown = 180;
-            
-            setTimeout(() => {
-                panel.remove();
-            }, 3000);
-        }
-        
-        // Réinitialiser le jeu
-        function resetGame() {
-            game.boatX = canvas.width / 2;
-            game.scrollOffset = 0;
-            game.obstacles = [];
-            game.obstacleCount = 0;
-            game.finalPhase = false;
-            game.obstacleSpawnTimer = 0;
-        }
-        
-        // Afficher le panneau de départ
-        function showStartPanel() {
-            const panel = document.createElement('div');
-            panel.className = 'panel';
-            panel.id = 'startPanel';
-            panel.innerHTML = `
-                <h2>⚓ HastaLuego ⚓</h2>
-                <p>À l'aide des touches directionnelles,<br>emmène ton bateau à bon port !</p>
-                <p class="space-hint">ESPACE pour commencer</p>
-            `;
-            document.body.appendChild(panel);
-        }
-        
-        // Afficher le panneau de victoire
-        function showVictoryPanel() {
-            const panel = document.createElement('div');
-            panel.className = 'panel';
-            panel.innerHTML = `
-                <h2>🎉 Bien joué ! 🎉</h2>
-                <p>Après 7 ans dans le même bateau, je vais changer d'équipage et quitter Harris pour une autre aventure.</p>
-                <p>Tu as prouvé ta valeur aujourd'hui ; je t'invite à rejoindre de la même façon mon pot de départ le <span class="highlight">jeudi 6 novembre</span>, à la cafèt, avant de se déhaler vers une autre destination plus festive !</p>
-            `;
-            document.body.appendChild(panel);
-            
-            game.state = 'victory';
-            if (music) music.pause();
-        }
-        
-        // Boucle de mise à jour
-        function update() {
-            if (game.state === 'start') {
-                game.autoStartTimer++;
-                if (game.autoStartTimer > 480) { // 8 secondes à 60fps
-                    startGame();
-                }
-                return;
-            }
-            
-            if (game.state !== 'playing') return;
-            
-            // Décrémenter le cooldown de collision
-            if (game.collisionCooldown > 0) {
-                game.collisionCooldown--;
-            }
-            
-            // Mouvement du bateau
-            if (keys['ArrowLeft'] && game.boatX > 40) {
-                game.boatX -= game.boatSpeed;
-            }
-            if (keys['ArrowRight'] && game.boatX < canvas.width - 40) {
-                game.boatX += game.boatSpeed;
-            }
-            if (keys['ArrowUp'] && game.boatY > 100) {
-                game.boatY -= game.boatSpeed * 0.5;
-            }
-            if (keys['ArrowDown'] && game.boatY < canvas.height - 50) {
-                game.boatY += game.boatSpeed * 0.5;
-            }
-            
-            // Phase finale
-            if (game.obstacleCount >= game.totalObstacles && !game.finalPhase) {
-                game.finalPhase = true;
-                game.flagY = -100;
-            }
-            
-            if (game.finalPhase) {
-                game.flagY += game.scrollSpeed;
-                game.finalBoatY -= 2;
-                game.boatY = Math.min(game.boatY, game.finalBoatY);
-                
-                // Vérifier l'arrivée
-                if (Math.abs(game.boatX - canvas.width / 2) < 50 && 
-                    Math.abs(game.boatY - (game.flagY + 20)) < 40) {
-                    showVictoryPanel();
-                }
-            } else {
-                // Défilement
-                game.scrollOffset += game.scrollSpeed;
-                
-                // Génération des obstacles
-                game.obstacleSpawnTimer++;
-                if (game.obstacleSpawnTimer >= game.obstacleSpawnInterval) {
-                    createObstacle();
-                    game.obstacleSpawnTimer = 0;
-                }
-                
-                // Mise à jour des obstacles
-                for (let i = game.obstacles.length - 1; i >= 0; i--) {
-                    game.obstacles[i].y += game.scrollSpeed;
-                    
-                    if (game.obstacles[i].y > canvas.height + 50) {
-                        game.obstacles.splice(i, 1);
-                    }
-                }
-                
-                // Vérifier les collisions
-                checkCollision();
-            }
-        }
-        
-        // Boucle de rendu
-        function draw() {
-            // Effacer
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Dessiner la mer
-            drawSea();
-            
-            // Dessiner les obstacles
-            for (let obstacle of game.obstacles) {
-                switch(obstacle.type) {
-                    case 'rock':
-                        drawRock(obstacle.x, obstacle.y);
-                        break;
-                    case 'redBuoy':
-                        drawRedBuoy(obstacle.x, obstacle.y);
-                        break;
-                    case 'greenBuoy':
-                        drawGreenBuoy(obstacle.x, obstacle.y);
-                        break;
-                }
-            }
-            
-            // Dessiner le drapeau en phase finale
-            if (game.finalPhase) {
-                drawFlag(canvas.width / 2, game.flagY);
-            }
-            
-            // Dessiner le bateau
-            drawBoat(game.boatX, game.boatY);
-            
-            // Indicateur de progression
-            if (game.state === 'playing' && !game.finalPhase) {
-                ctx.fillStyle = '#ffffff';
-                ctx.font = '12px "Press Start 2P"';
-                ctx.fillText(`Obstacles: ${game.obstacleCount}/${game.totalObstacles}`, 10, 30);
-            }
-        }
-        
-        // Démarrer le jeu
-        function startGame() {
-            const startPanel = document.getElementById('startPanel');
-            if (startPanel) startPanel.remove();
-            
-            game.state = 'playing';
-            initAudio();
-            resetGame();
-        }
-        
-        // Boucle principale
-        function gameLoop() {
-            update();
-            draw();
-            requestAnimationFrame(gameLoop);
-        }
-        
-        // Événements clavier
-        window.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
-            
-            if (e.key === ' ' && game.state === 'start') {
-                startGame();
-            }
-        });
-        
-        window.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
-        });
-        
-        // Initialisation
-        showStartPanel();
-        gameLoop();
-    </script>
+      }
+    });
+    // Auto-start after 8s if not started
+    setTimeout(() => { if (!gameStarted) startGame(); }, 8000);
+  </script>
 </body>
 </html>
