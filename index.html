@@ -188,7 +188,7 @@
 
             if (gameState === 'playing') {
                 // Spawn obstacles
-                if (obstaclesAvoided < 30 && Math.random() < 0.015) {
+                if (obstaclesAvoided < 50 && Math.random() < 0.015) {
                     createObstacle();
                 }
 
@@ -197,7 +197,7 @@
                     obs.y += scrollSpeed + 1;
                     
                     // Check collision
-                    if (Math.abs(boat.x - obs.x) < 25 && Math.abs(boat.y - obs.y) < 30) {
+                    if (Math.abs(boat.x - obs.x) < 25 && Math.abs(boat.y - obs.y) < 50) {
                         gameState = 'crashed';
                         showCrashBanner();
                     }
@@ -208,7 +208,7 @@
                         obstaclesAvoided++;
                         
                         // Win condition
-                        if (obstaclesAvoided >= 30) {
+                        if (obstaclesAvoided >= 50) {
                             gameState = 'winning';
                             port.y = boat.y - 300;
                         }
@@ -220,7 +220,7 @@
                 // Move boat towards port
                 boat.y -= 2;
                 
-                if (boat.y < port.y + 30) {
+                if (boat.y < port.y + 50) {
                     gameState = 'won';
                     showWinBanner();
                 }
@@ -245,7 +245,7 @@
                 ctx.fillStyle = '#FFF';
                 ctx.font = '14px "Press Start 2P", monospace';
                 ctx.textAlign = 'left';
-                ctx.fillText(`Obstacles: ${obstaclesAvoided}/30`, 30, 30);
+                ctx.fillText(`Obstacles: ${obstaclesAvoided}/50`, 50, 50);
             }
         }
 
