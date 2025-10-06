@@ -72,10 +72,10 @@
         let gameState = 'start';
         let score = 0;
         let obstaclesAvoided = 0;
-        let boat = { x: canvas.width / 2, y: canvas.height * 0.66, width: 40, height: 50, speed: 5 };
+        let boat = { x: canvas.width / 2, y: canvas.height * 0.66, width: 40, height: 50, speed: 6 };
         let obstacles = [];
         let scrollY = 0;
-        let scrollSpeed = 3;
+        let scrollSpeed = 4;
         let keys = {};
         let startTime = Date.now();
         let autoStartTimer = null;
@@ -188,7 +188,7 @@
 
             if (gameState === 'playing') {
                 // Spawn obstacles
-                if (obstaclesAvoided < 30 && Math.random() < 0.02) {
+                if (obstaclesAvoided < 30 && Math.random() < 0.025) {
                     createObstacle();
                 }
 
