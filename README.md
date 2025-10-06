@@ -1,24 +1,115 @@
-Je voudrais que tu crée le code d’un mini-jeu selon la description suivante, que je puisse ensuite copier-coller les fichiers dans les fichiers github.
-Il me faut d’une part le code index.html du jeu, et d’autre part le fichier readme.md.
- 
-Concept du gameplay :
-Le jeu s’ouvre automatiquement avec un panneau indiquant « à l’aide des touches directionnelles, emmène ton bateau à bon port ! » puis « ESPACE pour commencer ». En même temps, la piste musicale de la chanson « hasta luego » de Hugues Auffray se lance (asset chargé ultérieurement dans github), et est jouée en boucle jusqu'à la fin du jeu. Le jeu se lance dès que le joueur enfonce sa barre « espace », ou au bout de 8 secondes s’il ne fait rien. Puis la bannière s’efface et laisse apparaitre l’arrière-plan qui est une mer avec quelques vagues. 
-Au centre un bateau (un petit voilier sommaire), que le joueur dirige avec les touches directionnelles. L’arrière-plan défile pour donner l’impression que le bateau avance vers le haut (mais le bateau est en réalité statique sur la page, au centre sur l’axe gauche-droite et sur le premier tiers en partant du bas). Le bateau doit avancer sur la mer, vers le haut de l’écran donc. 
-Des obstacles apparaissent de temps en temps, que le bateau contrôlé par le joueur doit éviter. Ils sont de trois types : 
-1)      Des rochers représentés par des cailloux marrons. Ils apparaissent plutôt au centre de l’écran (25%-75% largeur). Le bateau doit les éviter en passant à droite ou à gauche. Il y a collision si le bateau passe sur un rocher. Dans ce cas, une bannière affiche « Tu t’es échoué ! Tu dois sûrement être un quanti… » et le jeu reprend du début.
-2)      Des bouées rouges carrées. Elles apparaissent dans la partie gauche de l’écran, 30-55% largeur) que le bateau doit éviter en passant à droite.  Il y a collision si le bateau passe à gauche de la bouée (0%-bouée largeur). Dans ce cas, une bannière affiche « on doit passer à droite des bouées bâbord rouges ! Marin d’eau douce ! » et le jeu reprend du début.
-3)      Des bouées vertes triangulaires. Elles apparaissent dans la partie droite de l’écran, 45%-70% largeur) que le bateau doit éviter en passant à gauche.  Il y a collision si le bateau passe à droite de la bouée (bouée-0% largeur). Dans ce cas, une bannière affiche « on doit passer à gauche des bouées tribord vertes ! Même Fred ! » et le jeu reprend du début.
-Au bout de 12 obstacles, soit une trentaine de secondes de jeu maximum, le bateau poursuit sa route vers le haut de l’écran (et n’est donc plus statique au centre) pour rejoindre un petit drapeau jaune au-dessus duquel il est écrit « po(r)t de départ ».
-Lorsque le bateau arrive sur ce drapeau, le jeu s’arrête et un panneau s’affiche avec le texte suivant :
-« Bien joué !
-Après 7 ans dans le même bateau, je vais changer d’équipage et quitter Harris pour une autre aventure.
-Tu as prouvé ta valeur aujourd’hui ; je t’invite à rejoindre de la même façon mon pot de départ le jeudi 6 novembre, à la cafèt, avant de se déhaler vers une autre destination plus festive ! »
-Les mots « jeudi 6 novembre » doivent être accentués, par une couleur ou une typographie spécifique.
- 
-Contrôles : flèches directionnelles (pour faire avancer le bateau), barre espace (pour lancer le jeu).
-Style : pixel art, rétrogaming, couleurs. Voir photo jointe pour référence / inspiration.
-Nom du jeu et nom du repo : HastaLuego
+# ⛵ HastaLuego - Mini-jeu de Navigation
 
-Je veux absolument les deux codes prêts à être copiés-collés : 
-1) le code index.html
-2) le code readme.md
+Un mini-jeu rétro pixel art créé pour célébrer un départ après 7 années d'aventures chez Harris Interactive.
+
+## 🎮 Description
+
+Naviguez à travers une mer parsemée d'obstacles pour atteindre votre nouveau port ! Ce jeu nostalgique de style pixel art vous met aux commandes d'un petit voilier qui doit éviter des rochers pour rejoindre sa destination finale.
+
+## 🕹️ Comment jouer
+
+### Contrôles
+- **Touches directionnelles** (↑ ↓ ← →) : Déplacer le bateau
+- **ESPACE** : Lancer le jeu / Réessayer après un crash
+
+### Objectif
+- Évitez les 12 rochers qui apparaissent sur votre route
+- Naviguez prudemment entre les obstacles
+- Atteignez le drapeau jaune du "po(r)t de départ"
+- Ne vous échouez pas sur les rochers !
+
+## 🎵 Musique
+
+Le jeu est accompagné de la chanson **"Hasta Luego"** d'Hugues Aufray qui se joue en boucle.
+
+### Installation de la musique
+Pour que la musique fonctionne, placez votre fichier audio dans le même répertoire que `index.html` et nommez-le :
+- `hasta_luego.mp3`
+
+Si vous utilisez un autre format ou nom de fichier, modifiez cette ligne dans le code HTML :
+```html
+<source src="hasta_luego.mp3" type="audio/mpeg">
+```
+
+## 📁 Installation
+
+1. Clonez ce repository :
+```bash
+git clone https://github.com/votre-username/HastaLuego.git
+cd HastaLuego
+```
+
+2. Ajoutez le fichier audio `hasta_luego.mp3` dans le dossier
+
+3. Ouvrez `index.html` dans votre navigateur web
+
+C'est tout ! Aucune installation supplémentaire nécessaire.
+
+## 🎨 Style visuel
+
+- **Thème** : Pixel art rétrogaming
+- **Palette de couleurs** : Tons bleus océaniques, marrons pour les rochers, jaune doré pour le drapeau
+- **Inspiration** : Jeux d'arcade des années 80-90
+
+## 🏆 Scénario du jeu
+
+Après 7 années passées dans le même bateau chez Harris, il est temps de larguer les amarres vers de nouvelles aventures. Ce mini-jeu célèbre ce départ et invite tous ceux qui réussissent à naviguer jusqu'au bout à rejoindre le pot de départ :
+
+**📅 Jeudi 6 novembre**  
+**📍 À la cafèt**  
+Puis direction vers une destination plus festive !
+
+## 🛠️ Technologies utilisées
+
+- HTML5 Canvas pour le rendu graphique
+- JavaScript vanilla (pas de framework)
+- CSS3 pour le style des bannières
+- API Web Audio pour la musique
+
+## 📝 Structure du projet
+
+```
+HastaLuego/
+│
+├── index.html          # Fichier principal du jeu (HTML + CSS + JavaScript)
+├── README.md          # Ce fichier
+└── hasta_luego.mp3    # Fichier audio (à ajouter)
+```
+
+## 🎯 Fonctionnalités
+
+- ✅ Démarrage automatique après 8 secondes ou manuel avec ESPACE
+- ✅ Musique de fond en boucle
+- ✅ Génération procédurale d'obstacles
+- ✅ Détection de collision pixel-perfect
+- ✅ Animation de l'eau avec effet de vagues
+- ✅ Système de scoring (obstacles évités)
+- ✅ Bannières d'information stylisées
+- ✅ Responsive design adapté aux différentes tailles d'écran
+
+## 🐛 Dépannage
+
+**La musique ne se lance pas ?**
+- Vérifiez que le fichier `hasta_luego.mp3` est présent dans le même dossier
+- Certains navigateurs bloquent l'autoplay audio : cliquez dans la page avant le démarrage
+- Essayez avec un autre navigateur (Chrome, Firefox, Safari)
+
+**Le jeu est trop rapide/lent ?**
+- Modifiez la variable `scrollSpeed` (ligne ~95 du code) pour ajuster la vitesse
+- Modifiez `player.speed` (ligne ~86) pour ajuster la vitesse du bateau
+
+## 🤝 Contribution
+
+Ce jeu a été créé spécialement pour un événement unique, mais n'hésitez pas à le forker et l'adapter pour vos propres occasions !
+
+## 📜 Licence
+
+Libre d'utilisation pour usage personnel et non commercial.
+
+## 👋 À propos
+
+Créé avec ❤️ pour célébrer 7 années formidables et un nouveau départ vers l'aventure !
+
+---
+
+**Hasta luego, amigos ! ⛵🌊**
