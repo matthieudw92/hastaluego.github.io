@@ -188,7 +188,7 @@
 
             if (gameState === 'playing') {
                 // Spawn obstacles
-                if (obstaclesAvoided < 30 && Math.random() < 0.025) {
+                if (obstaclesAvoided < 30 && Math.random() < 0.03) {
                     createObstacle();
                 }
 
@@ -208,7 +208,7 @@
                         obstaclesAvoided++;
                         
                         // Win condition
-                        if (obstaclesAvoided >= 20) {
+                        if (obstaclesAvoided >= 30) {
                             gameState = 'winning';
                             port.y = boat.y - 300;
                         }
@@ -245,7 +245,7 @@
                 ctx.fillStyle = '#FFF';
                 ctx.font = '14px "Press Start 2P", monospace';
                 ctx.textAlign = 'left';
-                ctx.fillText(`Obstacles: ${obstaclesAvoided}/20`, 20, 30);
+                ctx.fillText(`Obstacles: ${obstaclesAvoided}/30`, 20, 30);
             }
         }
 
