@@ -72,10 +72,10 @@
         let gameState = 'start';
         let score = 0;
         let obstaclesAvoided = 0;
-        let boat = { x: canvas.width / 2, y: canvas.height * 0.66, width: 40, height: 50, speed: 4 };
+        let boat = { x: canvas.width / 2, y: canvas.height * 0.66, width: 40, height: 50, speed: 5 };
         let obstacles = [];
         let scrollY = 0;
-        let scrollSpeed = 2;
+        let scrollSpeed = 3;
         let keys = {};
         let startTime = Date.now();
         let autoStartTimer = null;
@@ -138,7 +138,7 @@
         function drawObstacle(obs) {
             // Brown rock with pixel art style
             ctx.fillStyle = '#8B4513';
-            ctx.fillRect(obs.x - 30, obs.y - 15, 40, 30);
+            ctx.fillRect(obs.x - 20, obs.y - 15, 40, 30);
             
             ctx.fillStyle = '#A0522D';
             ctx.fillRect(obs.x - 15, obs.y - 10, 15, 15);
@@ -188,7 +188,7 @@
 
             if (gameState === 'playing') {
                 // Spawn obstacles
-                if (obstaclesAvoided < 50 && Math.random() < 0.015) {
+                if (obstaclesAvoided < 30 && Math.random() < 0.02) {
                     createObstacle();
                 }
 
@@ -197,7 +197,7 @@
                     obs.y += scrollSpeed + 1;
                     
                     // Check collision
-                    if (Math.abs(boat.x - obs.x) < 25 && Math.abs(boat.y - obs.y) < 50) {
+                    if (Math.abs(boat.x - obs.x) < 25 && Math.abs(boat.y - obs.y) < 30) {
                         gameState = 'crashed';
                         showCrashBanner();
                     }
@@ -208,7 +208,7 @@
                         obstaclesAvoided++;
                         
                         // Win condition
-                        if (obstaclesAvoided >= 50) {
+                        if (obstaclesAvoided >= 20) {
                             gameState = 'winning';
                             port.y = boat.y - 300;
                         }
@@ -220,7 +220,7 @@
                 // Move boat towards port
                 boat.y -= 2;
                 
-                if (boat.y < port.y + 50) {
+                if (boat.y < port.y + 30) {
                     gameState = 'won';
                     showWinBanner();
                 }
@@ -245,7 +245,7 @@
                 ctx.fillStyle = '#FFF';
                 ctx.font = '14px "Press Start 2P", monospace';
                 ctx.textAlign = 'left';
-                ctx.fillText(`Obstacles: ${obstaclesAvoided}/50`, 50, 50);
+                ctx.fillText(`Obstacles: ${obstaclesAvoided}/20`, 20, 30);
             }
         }
 
