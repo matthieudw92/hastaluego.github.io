@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HastaLuego - Mini-jeu</title>
+    <title>Hasta Luego - Mini Jeu</title>
     <style>
         * {
             margin: 0;
@@ -12,18 +12,15 @@
         }
 
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            background: #1a1a2e;
-            font-family: 'Courier New', monospace;
+            font-family: 'Press Start 2P', 'Courier New', monospace;
             overflow: hidden;
+            background: #000;
         }
 
         #gameCanvas {
-            border: 4px solid #0f3460;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: block;
+            margin: 0 auto;
+            background: #1a4d6d;
             image-rendering: pixelated;
             image-rendering: crisp-edges;
         }
@@ -33,393 +30,307 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(15, 52, 96, 0.95);
-            border: 4px solid #e94560;
-            padding: 30px 40px;
-            text-align: center;
+            background: rgba(0, 0, 0, 0.9);
             color: #fff;
-            max-width: 500px;
+            padding: 40px;
+            border: 4px solid #ff6b35;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.8;
+            max-width: 600px;
             z-index: 100;
-            box-shadow: 0 0 30px rgba(233, 69, 96, 0.5);
-        }
-
-        .banner h2 {
-            font-size: 24px;
-            margin-bottom: 15px;
-            color: #ffd700;
-            text-shadow: 2px 2px 0 #000;
-        }
-
-        .banner p {
-            font-size: 16px;
-            line-height: 1.6;
-            margin-bottom: 10px;
+            box-shadow: 0 0 20px rgba(255, 107, 53, 0.5);
         }
 
         .highlight {
-            color: #ffd700;
+            color: #ffcc00;
             font-weight: bold;
-            font-size: 18px;
-            text-shadow: 1px 1px 0 #000;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
         }
 
-        .hidden {
-            display: none;
+        #startBanner {
+            font-size: 16px;
         }
     </style>
 </head>
 <body>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
-    
+    <canvas id="gameCanvas"></canvas>
     <div id="startBanner" class="banner">
-        <h2>⛵ Hasta Luego ⛵</h2>
-        <p>À l'aide des touches directionnelles,<br>emmène ton bateau à bon port !</p>
-        <p class="highlight">ESPACE pour commencer</p>
-        <p style="font-size: 12px; margin-top: 15px; opacity: 0.7;">Le jeu démarre automatiquement dans <span id="countdown">8</span>s</p>
+        À l'aide des touches directionnelles,<br>
+        emmène ton bateau à bon port !<br><br>
+        <span class="highlight">ESPACE pour commencer</span>
     </div>
-
-    <div id="crashBanner" class="banner hidden">
-        <h2>💥 Aïe ! 💥</h2>
-        <p>Tu t'es échoué !</p>
-        <p>Tu dois sûrement être un quanti…</p>
-        <p style="margin-top: 15px; font-size: 14px; opacity: 0.8;">Appuie sur ESPACE pour réessayer</p>
-    </div>
-
-    <div id="winBanner" class="banner hidden">
-        <h2>🎉 Bien joué ! 🎉</h2>
-        <p>Après 7 ans dans le même bateau, je vais changer d'équipage et quitter Harris pour une autre aventure.</p>
-        <p style="margin-top: 15px;">Tu as prouvé ta valeur aujourd'hui ; je t'invite à rejoindre de la même façon mon pot de départ le <span class="highlight">jeudi 6 novembre</span>, à la cafèt, avant de se déhaler vers une autre destination plus festive !</p>
-    </div>
-
-    <audio id="gameMusic" loop>
-        <source src="hasta_luego.mp3" type="audio/mpeg">
-    </audio>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const music = document.getElementById('gameMusic');
+        
+        canvas.width = 800;
+        canvas.height = 600;
 
-        // Game states
-        const GAME_STATE = {
-            START: 'start',
-            PLAYING: 'playing',
-            CRASHED: 'crashed',
-            SAILING_TO_PORT: 'sailing_to_port',
-            WON: 'won'
-        };
-
-        let gameState = GAME_STATE.START;
-        let autoStartTimer = 8;
-        let countdownInterval;
-
-        // Player
-        const player = {
-            x: canvas.width / 2,
-            y: canvas.height * 0.66,
-            width: 40,
-            height: 50,
-            speed: 4
-        };
-
-        // Obstacles
+        // Game state
+        let gameState = 'start';
+        let score = 0;
+        let obstaclesAvoided = 0;
+        let boat = { x: canvas.width / 2, y: canvas.height * 0.66, width: 40, height: 50, speed: 4 };
         let obstacles = [];
-        let obstaclesPassed = 0;
-        const MAX_OBSTACLES = 12;
-        let obstacleTimer = 0;
-        const OBSTACLE_INTERVAL = 100;
-
-        // Port/Flag
-        const port = {
-            x: canvas.width / 2,
-            y: -100,
-            width: 30,
-            height: 40
-        };
-
-        // Scroll offset
         let scrollY = 0;
         let scrollSpeed = 2;
+        let keys = {};
+        let startTime = Date.now();
+        let autoStartTimer = null;
+        let port = { x: canvas.width / 2, y: -200, width: 60, height: 60 };
+        let gameWon = false;
 
-        // Water animation
-        let waterOffset = 0;
+        // Audio
+        let audio = new Audio('hasta_luego.mp3');
+        audio.loop = true;
+        audio.volume = 0.5;
 
-        // Input handling
-        const keys = {};
-        window.addEventListener('keydown', (e) => {
-            keys[e.key] = true;
-            
-            if (e.key === ' ' || e.key === 'Spacebar') {
-                e.preventDefault();
-                if (gameState === GAME_STATE.START) {
-                    startGame();
-                } else if (gameState === GAME_STATE.CRASHED) {
-                    resetGame();
-                }
-            }
+        // Try to load audio, but continue even if it fails
+        audio.addEventListener('error', function() {
+            console.log('Audio file not found, continuing without music');
         });
 
-        window.addEventListener('keyup', (e) => {
-            keys[e.key] = false;
-        });
+        // Water wave effect
+        let waveOffset = 0;
 
-        // Start countdown
-        function startCountdown() {
-            countdownInterval = setInterval(() => {
-                autoStartTimer--;
-                document.getElementById('countdown').textContent = autoStartTimer;
-                if (autoStartTimer <= 0) {
-                    startGame();
-                }
-            }, 1000);
-        }
-
-        function startGame() {
-            if (gameState !== GAME_STATE.START) return;
-            
-            clearInterval(countdownInterval);
-            document.getElementById('startBanner').classList.add('hidden');
-            gameState = GAME_STATE.PLAYING;
-            
-            music.play().catch(e => console.log('Musique non chargée:', e));
-        }
-
-        function resetGame() {
-            gameState = GAME_STATE.PLAYING;
-            document.getElementById('crashBanner').classList.add('hidden');
-            player.x = canvas.width / 2;
-            player.y = canvas.height * 0.66;
-            obstacles = [];
-            obstaclesPassed = 0;
-            obstacleTimer = 0;
-            scrollY = 0;
-            scrollSpeed = 2;
-        }
-
-        // Draw water with waves
         function drawWater() {
-            const waveColors = ['#1e3a5f', '#2b5278', '#1a2f4a'];
-            waterOffset += 0.5;
+            const waveHeight = 8;
+            const waveFrequency = 0.02;
             
-            for (let y = 0; y < canvas.height; y += 3) {
-                const offset = Math.sin((y + waterOffset) * 0.02) * 20;
-                const colorIndex = Math.floor(Math.abs(offset) / 7) % waveColors.length;
-                ctx.fillStyle = waveColors[colorIndex];
-                ctx.fillRect(0, y, canvas.width, 3);
+            for (let y = 0; y < canvas.height; y += 16) {
+                for (let x = 0; x < canvas.width; x += 16) {
+                    const wave = Math.sin((x + y + waveOffset + scrollY) * waveFrequency) * waveHeight;
+                    const brightness = 26 + Math.floor(wave);
+                    ctx.fillStyle = `rgb(${brightness}, ${77 + Math.floor(wave / 2)}, ${109 + Math.floor(wave / 3)})`;
+                    ctx.fillRect(x, y, 16, 16);
+                }
             }
+            waveOffset += 0.5;
         }
 
-        // Draw boat
-        function drawBoat(x, y) {
+        function drawBoat() {
             // Hull
             ctx.fillStyle = '#8B4513';
-            ctx.fillRect(x - 20, y + 10, 40, 20);
-            ctx.fillRect(x - 15, y + 30, 30, 8);
+            ctx.fillRect(boat.x - 15, boat.y + 10, 30, 20);
+            ctx.fillRect(boat.x - 12, boat.y + 30, 24, 8);
             
             // Mast
-            ctx.fillStyle = '#654321';
-            ctx.fillRect(x - 2, y - 20, 4, 30);
+            ctx.fillStyle = '#5C4033';
+            ctx.fillRect(boat.x - 2, boat.y - 10, 4, 20);
             
             // Sail
             ctx.fillStyle = '#F5E6D3';
             ctx.beginPath();
-            ctx.moveTo(x, y - 20);
-            ctx.lineTo(x + 20, y);
-            ctx.lineTo(x, y + 10);
+            ctx.moveTo(boat.x, boat.y - 10);
+            ctx.lineTo(boat.x + 18, boat.y + 5);
+            ctx.lineTo(boat.x, boat.y + 10);
             ctx.closePath();
             ctx.fill();
             
-            // Outline
-            ctx.strokeStyle = '#000';
+            // Sail outline
+            ctx.strokeStyle = '#5C4033';
             ctx.lineWidth = 2;
             ctx.stroke();
         }
 
-        // Draw rock obstacle
-        function drawRock(x, y) {
-            const colors = ['#8B7355', '#A0826D', '#654321'];
+        function drawObstacle(obs) {
+            // Brown rock with pixel art style
+            ctx.fillStyle = '#8B4513';
+            ctx.fillRect(obs.x - 20, obs.y - 15, 40, 30);
             
-            // Main rock body
-            ctx.fillStyle = colors[0];
-            ctx.beginPath();
-            ctx.arc(x, y, 25, 0, Math.PI * 2);
-            ctx.fill();
+            ctx.fillStyle = '#A0522D';
+            ctx.fillRect(obs.x - 15, obs.y - 10, 15, 15);
+            ctx.fillRect(obs.x + 5, obs.y - 8, 12, 12);
             
-            // Highlights
-            ctx.fillStyle = colors[1];
-            ctx.beginPath();
-            ctx.arc(x - 8, y - 8, 12, 0, Math.PI * 2);
-            ctx.fill();
-            
-            ctx.fillStyle = colors[2];
-            ctx.beginPath();
-            ctx.arc(x + 10, y + 5, 8, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Outline
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(x, y, 25, 0, Math.PI * 2);
-            ctx.stroke();
+            ctx.fillStyle = '#D2691E';
+            ctx.fillRect(obs.x - 10, obs.y - 5, 8, 8);
+            ctx.fillRect(obs.x + 8, obs.y, 6, 6);
         }
 
-        // Draw port flag
-        function drawPort(x, y) {
-            // Pole
-            ctx.fillStyle = '#654321';
-            ctx.fillRect(x - 2, y, 4, 30);
+        function drawPort() {
+            // Flag pole
+            ctx.fillStyle = '#5C4033';
+            ctx.fillRect(port.x - 2, port.y, 4, 40);
             
-            // Flag
+            // Yellow flag
             ctx.fillStyle = '#FFD700';
-            ctx.fillRect(x, y, 25, 15);
+            ctx.fillRect(port.x + 2, port.y, 25, 15);
             
-            // Text
-            ctx.fillStyle = '#000';
-            ctx.font = 'bold 8px Courier New';
-            ctx.fillText('po(r)t de', x - 25, y - 5);
-            ctx.fillText('départ', x - 20, y - 15);
-            
-            // Outline
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.strokeRect(x, y, 25, 15);
+            // Text above
+            ctx.fillStyle = '#FFF';
+            ctx.font = '12px "Press Start 2P", monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('PO(R)T DE', port.x + 15, port.y - 15);
+            ctx.fillText('DEPART', port.x + 15, port.y - 2);
         }
 
-        // Spawn obstacle
-        function spawnObstacle() {
-            const minX = canvas.width * 0.25;
-            const maxX = canvas.width * 0.75;
-            const x = minX + Math.random() * (maxX - minX);
-            
+        function createObstacle() {
+            const minX = canvas.width * 0.05;
+            const maxX = canvas.width * 0.95;
             obstacles.push({
-                x: x,
-                y: -50,
-                width: 50,
-                height: 50,
-                passed: false
+                x: minX + Math.random() * (maxX - minX),
+                y: -30,
+                width: 40,
+                height: 30
             });
         }
 
-        // Check collision
-        function checkCollision(obj1, obj2) {
-            return obj1.x < obj2.x + obj2.width &&
-                   obj1.x + obj1.width > obj2.x &&
-                   obj1.y < obj2.y + obj2.height &&
-                   obj1.y + obj1.height > obj2.y;
-        }
+        function updateGame() {
+            if (gameState !== 'playing' && gameState !== 'winning') return;
 
-        // Update game
-        function update() {
-            if (gameState === GAME_STATE.PLAYING) {
-                // Player movement
-                if (keys['ArrowLeft'] || keys['a']) {
-                    player.x = Math.max(player.width / 2, player.x - player.speed);
-                }
-                if (keys['ArrowRight'] || keys['d']) {
-                    player.x = Math.min(canvas.width - player.width / 2, player.x + player.speed);
-                }
-                if (keys['ArrowUp'] || keys['w']) {
-                    player.y = Math.max(player.height / 2, player.y - player.speed);
-                }
-                if (keys['ArrowDown'] || keys['s']) {
-                    player.y = Math.min(canvas.height - player.height / 2, player.y + player.speed);
-                }
+            // Move boat
+            if (keys['ArrowLeft'] && boat.x > 30) boat.x -= boat.speed;
+            if (keys['ArrowRight'] && boat.x < canvas.width - 30) boat.x += boat.speed;
+            if (keys['ArrowUp'] && boat.y > 30) boat.y -= boat.speed;
+            if (keys['ArrowDown'] && boat.y < canvas.height - 30) boat.y += boat.speed;
 
+            if (gameState === 'playing') {
                 // Spawn obstacles
-                if (obstaclesPassed < MAX_OBSTACLES) {
-                    obstacleTimer++;
-                    if (obstacleTimer >= OBSTACLE_INTERVAL) {
-                        spawnObstacle();
-                        obstacleTimer = 0;
-                    }
+                if (obstaclesAvoided < 20 && Math.random() < 0.015) {
+                    createObstacle();
                 }
 
                 // Update obstacles
-                for (let i = obstacles.length - 1; i >= 0; i--) {
-                    const obs = obstacles[i];
-                    obs.y += scrollSpeed;
-
-                    // Check if passed
-                    if (!obs.passed && obs.y > player.y) {
-                        obs.passed = true;
-                        obstaclesPassed++;
-                    }
-
+                obstacles.forEach((obs, index) => {
+                    obs.y += scrollSpeed + 1;
+                    
                     // Check collision
-                    if (checkCollision(player, obs)) {
-                        gameState = GAME_STATE.CRASHED;
-                        document.getElementById('crashBanner').classList.remove('hidden');
-                        return;
+                    if (Math.abs(boat.x - obs.x) < 25 && Math.abs(boat.y - obs.y) < 30) {
+                        gameState = 'crashed';
+                        showCrashBanner();
                     }
 
                     // Remove off-screen obstacles
                     if (obs.y > canvas.height + 50) {
-                        obstacles.splice(i, 1);
+                        obstacles.splice(index, 1);
+                        obstaclesAvoided++;
+                        
+                        // Win condition
+                        if (obstaclesAvoided >= 20) {
+                            gameState = 'winning';
+                            port.y = boat.y - 300;
+                        }
                     }
-                }
-
-                // Check if all obstacles passed
-                if (obstaclesPassed >= MAX_OBSTACLES && obstacles.length === 0) {
-                    gameState = GAME_STATE.SAILING_TO_PORT;
-                }
+                });
 
                 scrollY += scrollSpeed;
-
-            } else if (gameState === GAME_STATE.SAILING_TO_PORT) {
-                // Move player up to port
-                player.y -= 3;
-                port.y += 3;
-
-                // Check if reached port
-                if (player.y < port.y + port.height + 20) {
-                    gameState = GAME_STATE.WON;
-                    document.getElementById('winBanner').classList.remove('hidden');
+            } else if (gameState === 'winning') {
+                // Move boat towards port
+                boat.y -= 2;
+                
+                if (boat.y < port.y + 30) {
+                    gameState = 'won';
+                    showWinBanner();
                 }
             }
         }
 
-        // Draw game
-        function draw() {
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw water
+        function drawGame() {
             drawWater();
-
-            // Draw port if sailing to it or won
-            if (gameState === GAME_STATE.SAILING_TO_PORT || gameState === GAME_STATE.WON) {
-                drawPort(port.x, port.y);
+            
+            if (gameState === 'playing' || gameState === 'winning') {
+                obstacles.forEach(drawObstacle);
             }
+            
+            if (gameState === 'winning' || gameState === 'won') {
+                drawPort();
+            }
+            
+            drawBoat();
 
-            // Draw obstacles
-            obstacles.forEach(obs => {
-                drawRock(obs.x, obs.y);
-            });
-
-            // Draw player
-            drawBoat(player.x, player.y);
-
-            // Draw score
-            if (gameState === GAME_STATE.PLAYING) {
-                ctx.fillStyle = '#FFD700';
-                ctx.font = 'bold 16px Courier New';
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 3;
-                ctx.strokeText(`Obstacles évités: ${obstaclesPassed}/${MAX_OBSTACLES}`, 10, 30);
-                ctx.fillText(`Obstacles évités: ${obstaclesPassed}/${MAX_OBSTACLES}`, 10, 30);
+            // Score
+            if (gameState === 'playing') {
+                ctx.fillStyle = '#FFF';
+                ctx.font = '14px "Press Start 2P", monospace';
+                ctx.textAlign = 'left';
+                ctx.fillText(`Obstacles: ${obstaclesAvoided}/20`, 20, 30);
             }
         }
 
-        // Game loop
+        function showCrashBanner() {
+            const banner = document.createElement('div');
+            banner.className = 'banner';
+            banner.innerHTML = 'Tu t\'es échoué !<br>Tu dois sûrement être un quanti…<br><br><span class="highlight">Redémarrage...</span>';
+            document.body.appendChild(banner);
+            
+            setTimeout(() => {
+                document.body.removeChild(banner);
+                resetGame();
+                gameState = 'playing';
+            }, 3000);
+        }
+
+        function showWinBanner() {
+            const banner = document.createElement('div');
+            banner.className = 'banner';
+            banner.innerHTML = `
+                Bien joué !<br><br>
+                Après 7 ans dans le même bateau,<br>
+                je vais changer d'équipage et quitter<br>
+                Harris pour une autre aventure.<br><br>
+                Tu as prouvé ta valeur aujourd'hui ;<br>
+                je t'invite à rejoindre de la même façon<br>
+                mon pot de départ le<br>
+                <span class="highlight">jeudi 6 novembre</span>,<br>
+                à la cafèt, avant de se déhaler<br>
+                vers une autre destination plus festive !
+            `;
+            document.body.appendChild(banner);
+        }
+
+        function resetGame() {
+            boat.x = canvas.width / 2;
+            boat.y = canvas.height * 0.66;
+            obstacles = [];
+            scrollY = 0;
+            obstaclesAvoided = 0;
+            port.y = -200;
+        }
+
         function gameLoop() {
-            update();
-            draw();
+            updateGame();
+            drawGame();
             requestAnimationFrame(gameLoop);
         }
 
-        // Initialize
-        startCountdown();
+        // Event listeners
+        document.addEventListener('keydown', (e) => {
+            keys[e.key] = true;
+            
+            if (e.key === ' ' && gameState === 'start') {
+                startGame();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            keys[e.key] = false;
+        });
+
+        function startGame() {
+            const startBanner = document.getElementById('startBanner');
+            if (startBanner) {
+                document.body.removeChild(startBanner);
+            }
+            if (autoStartTimer) {
+                clearTimeout(autoStartTimer);
+            }
+            gameState = 'playing';
+            audio.play().catch(e => console.log('Audio play failed:', e));
+        }
+
+        // Auto-start after 8 seconds
+        autoStartTimer = setTimeout(() => {
+            if (gameState === 'start') {
+                startGame();
+            }
+        }, 8000);
+
+        // Start music immediately
+        audio.play().catch(e => console.log('Audio play failed:', e));
+
+        // Start game loop
         gameLoop();
     </script>
 </body>
